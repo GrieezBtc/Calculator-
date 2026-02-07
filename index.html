@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-  <title>Pro Calc & Currency Converter</title>
+  <title>Pro Calc & Currency</title>
+  
+  <meta name="theme-color" content="#fbaf00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pro%20Calculator%22,%22short_name%22:%22ProCalc%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#fbaf00%22}">
+
   <style>
     :root {
       --bg-body: #f0f2f5;
@@ -59,25 +66,23 @@
 
     .nav-tabs {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 15px;
     }
 
     .nav-btn {
       flex: 1;
-      padding: 10px;
+      padding: 10px 5px;
       border-radius: 12px;
       border: none;
       background: var(--btn-bg);
       color: var(--text-secondary);
       cursor: pointer;
       font-weight: 600;
+      font-size: 0.85rem;
     }
 
-    .nav-btn.active {
-      background: var(--accent);
-      color: white;
-    }
+    .nav-btn.active { background: var(--accent); color: white; }
 
     #display-container {
       background: var(--bg-display);
@@ -85,37 +90,32 @@
       padding: 15px;
       margin-bottom: 15px;
       text-align: right;
-      min-height: 100px;
+      min-height: 120px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-end;
     }
 
+    #history-preview { font-size: 0.9rem; color: var(--text-secondary); min-height: 20px; }
     #display {
       width: 100%;
       border: none;
       background: transparent;
-      font-size: 2rem;
+      font-size: 2.2rem;
       color: var(--text-main);
       text-align: right;
       outline: none;
     }
 
-    /* Converter Styling */
-    .converter-ui {
-      display: none;
-      flex-direction: column;
-      gap: 15px;
-    }
+    /* Grid and Panels */
+    .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    #sci-panel { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--btn-hover); }
+    #sci-panel.active { display: grid; }
 
+    /* Currency Converter */
+    .converter-ui { display: none; flex-direction: column; gap: 12px; }
     .converter-ui.active { display: flex; }
-
-    .currency-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
+    .currency-row { display: flex; gap: 10px; align-items: center; }
     select, .conv-input {
       padding: 12px;
       border-radius: 12px;
@@ -126,14 +126,9 @@
       width: 100%;
     }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    button {
-      padding: 15px 5px;
+    /* Buttons */
+    button.calc-btn {
+      padding: 18px 5px;
       border-radius: 16px;
       border: none;
       background: var(--btn-bg);
@@ -141,14 +136,27 @@
       font-size: 1.2rem;
       cursor: pointer;
     }
-
-    button:active { transform: scale(0.95); }
+    button.calc-btn:active { transform: scale(0.92); }
+    .sci-btn { background: var(--sci-bg); color: var(--sci-text); font-size: 0.9rem; }
     .operator { color: var(--accent); font-weight: bold; }
     .special { background: #ea4335; color: white; }
     .equal { background: var(--success); color: white; grid-column: span 2; }
-    .hidden { display: none !important; }
 
-    #loader { font-size: 0.8rem; color: var(--accent); display: none; }
+    /* History Slide-up */
+    #history-panel {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-calc);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      padding: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+    }
+    #history-panel.active { transform: translateY(0); }
+    .history-list { flex-grow: 1; overflow-y: auto; margin: 15px 0; }
+    .history-item { padding: 12px; border-bottom: 1px solid var(--btn-bg); text-align: right; cursor: pointer; color: var(--text-main); }
   </style>
 </head>
 <body>
@@ -157,88 +165,128 @@
   <div class="nav-tabs">
     <button class="nav-btn active" onclick="switchMode('calc')">Calculator</button>
     <button class="nav-btn" onclick="switchMode('conv')">Currency</button>
-    <button class="nav-btn" style="flex:0.3" onclick="toggleTheme()">🌙</button>
+    <button class="nav-btn" onclick="toggleSci()" id="sci-toggle">🧪 Sci</button>
+    <button class="nav-btn" onclick="toggleHistory()">📜</button>
+    <button class="nav-btn" style="flex:0.4" onclick="toggleTheme()">🌙</button>
   </div>
 
   <div id="calc-ui">
     <div id="display-container">
+      <div id="history-preview"></div>
       <input type="text" id="display" readonly placeholder="0">
     </div>
+
+    <div id="sci-panel">
+      <button class="calc-btn sci-btn" onclick="addSci('Math.sin(')">sin</button>
+      <button class="calc-btn sci-btn" onclick="addSci('Math.cos(')">cos</button>
+      <button class="calc-btn sci-btn" onclick="addSci('Math.sqrt(')">√</button>
+      <button class="calc-btn sci-btn" onclick="addValue('**')">xʸ</button>
+    </div>
+
     <div class="grid-container">
-      <button class="special" onclick="clearDisplay()">C</button>
-      <button onclick="deleteChar()">⌫</button>
-      <button class="operator" onclick="addValue('%')">%</button>
-      <button class="operator" onclick="addValue('/')">÷</button>
-      <button onclick="addValue('7')">7</button>
-      <button onclick="addValue('8')">8</button>
-      <button onclick="addValue('9')">9</button>
-      <button class="operator" onclick="addValue('*')">x</button>
-      <button onclick="addValue('4')">4</button>
-      <button onclick="addValue('5')">5</button>
-      <button onclick="addValue('6')">6</button>
-      <button class="operator" onclick="addValue('-')">-</button>
-      <button onclick="addValue('1')">1</button>
-      <button onclick="addValue('2')">2</button>
-      <button onclick="addValue('3')">3</button>
-      <button class="operator" onclick="addValue('+')">+</button>
-      <button onclick="addValue('0')">0</button>
-      <button onclick="addValue('.')">.</button>
-      <button class="equal" onclick="calculate()">=</button>
+      <button class="calc-btn special" onclick="clearDisplay()">C</button>
+      <button class="calc-btn" onclick="deleteChar()">⌫</button>
+      <button class="calc-btn operator" onclick="addValue('%')">%</button>
+      <button class="calc-btn operator" onclick="addValue('/')">÷</button>
+      <button class="calc-btn" onclick="addValue('7')">7</button>
+      <button class="calc-btn" onclick="addValue('8')">8</button>
+      <button class="calc-btn" onclick="addValue('9')">9</button>
+      <button class="calc-btn operator" onclick="addValue('*')">x</button>
+      <button class="calc-btn" onclick="addValue('4')">4</button>
+      <button class="calc-btn" onclick="addValue('5')">5</button>
+      <button class="calc-btn" onclick="addValue('6')">6</button>
+      <button class="calc-btn operator" onclick="addValue('-')">-</button>
+      <button class="calc-btn" onclick="addValue('1')">1</button>
+      <button class="calc-btn" onclick="addValue('2')">2</button>
+      <button class="calc-btn" onclick="addValue('3')">3</button>
+      <button class="calc-btn operator" onclick="addValue('+')">+</button>
+      <button class="calc-btn" onclick="addValue('0')">0</button>
+      <button class="calc-btn" onclick="addValue('.')">.</button>
+      <button class="calc-btn equal" onclick="calculate()">=</button>
     </div>
   </div>
 
   <div id="conv-ui" class="converter-ui">
-    <div id="display-container" style="min-height: 140px;">
-      <div id="loader">Fetching rates...</div>
+    <div id="display-container" style="min-height: 180px; justify-content: center;">
+      <small id="loader" style="color:var(--accent); display:none; text-align:center;">Updating Rates...</small>
       <div class="currency-row">
         <input type="number" id="amount" class="conv-input" value="1" oninput="convertCurrency()">
         <select id="fromCurrency" onchange="convertCurrency()">
+          <option value="NGN" selected>NGN</option>
           <option value="USD">USD</option>
           <option value="EUR">EUR</option>
           <option value="GBP">GBP</option>
-          <option value="NGN" selected>NGN</option>
         </select>
       </div>
-      <div style="text-align:center; margin: 5px 0; cursor:pointer" onclick="swapCurrencies()">⇅</div>
+      <div style="text-align:center; margin: 8px 0; color:var(--accent); cursor:pointer" onclick="swapCurrencies()">⇅ Swap</div>
       <div class="currency-row">
         <input type="text" id="result" class="conv-input" readonly placeholder="Result">
         <select id="toCurrency" onchange="convertCurrency()">
           <option value="USD" selected>USD</option>
+          <option value="NGN">NGN</option>
           <option value="EUR">EUR</option>
           <option value="GBP">GBP</option>
-          <option value="NGN">NGN</option>
         </select>
       </div>
     </div>
-    <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Live rates via ExchangeRate-API</p>
+  </div>
+
+  <div id="history-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; color:var(--text-main)">History</h3>
+      <button class="nav-btn" style="flex:none; padding:5px 15px;" onclick="toggleHistory()">Close</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+    <button class="nav-btn" onclick="clearHistory()">Clear History</button>
   </div>
 </div>
 
 <script>
   const display = document.getElementById('display');
-  
-  // Mode Switching
+  const historyPreview = document.getElementById('history-preview');
+  const historyList = document.getElementById('history-list');
+  let calculations = [];
+
+  // Theme & Mode Switching
+  function toggleTheme() {
+    const body = document.body;
+    body.getAttribute('data-theme') === 'dark' ? body.removeAttribute('data-theme') : body.setAttribute('data-theme', 'dark');
+  }
+
   function switchMode(mode) {
-    const btns = document.querySelectorAll('.nav-btn');
-    btns[0].classList.toggle('active', mode === 'calc');
-    btns[1].classList.toggle('active', mode === 'conv');
     document.getElementById('calc-ui').style.display = mode === 'calc' ? 'block' : 'none';
     document.getElementById('conv-ui').classList.toggle('active', mode === 'conv');
+    document.querySelectorAll('.nav-btn')[0].classList.toggle('active', mode === 'calc');
+    document.querySelectorAll('.nav-btn')[1].classList.toggle('active', mode === 'conv');
     if(mode === 'conv') convertCurrency();
   }
 
-  function toggleTheme() {
-    const isDark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  function toggleSci() {
+    document.getElementById('sci-panel').classList.toggle('active');
+  }
+
+  function toggleHistory() {
+    document.getElementById('history-panel').classList.toggle('active');
   }
 
   // Calculator Logic
   function addValue(val) { display.value += val; }
-  function clearDisplay() { display.value = ''; }
+  function addSci(func) { display.value += func; }
+  function clearDisplay() { display.value = ''; historyPreview.innerText = ''; }
   function deleteChar() { display.value = display.value.slice(0, -1); }
+
   function calculate() {
-    try { display.value = eval(display.value); } 
-    catch { display.value = 'Error'; }
+    try {
+      let expression = display.value;
+      if (!expression) return;
+      let result = eval(expression);
+      if (result.toString().includes('.') && result.toString().split('.')[1].length > 6) result = result.toFixed(6);
+      
+      historyPreview.innerText = expression.replace(/\*/g, 'x').replace(/Math\./g, '') + " =";
+      calculations.unshift(`${historyPreview.innerText} ${result}`);
+      updateHistoryUI();
+      display.value = result;
+    } catch { display.value = 'Error'; }
   }
 
   // Currency Logic
@@ -249,31 +297,30 @@
     const resultInput = document.getElementById('result');
     const loader = document.getElementById('loader');
 
-    if (!amount || amount <= 0) return;
-
+    if (!amount) return;
     loader.style.display = 'block';
     try {
-      const response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
-      const data = await response.json();
-      const rate = data.rates[to];
-      const converted = (amount * rate).toFixed(2);
-      resultInput.value = converted;
-    } catch (error) {
-      resultInput.value = "Error fetching rates";
-    } finally {
-      loader.style.display = 'none';
-    }
+      const res = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+      const data = await res.json();
+      resultInput.value = (amount * data.rates[to]).toLocaleString(undefined, {minimumFractionDigits: 2});
+    } catch { resultInput.value = "Offline"; }
+    loader.style.display = 'none';
   }
 
   function swapCurrencies() {
     const from = document.getElementById('fromCurrency');
     const to = document.getElementById('toCurrency');
-    const temp = from.value;
-    from.value = to.value;
-    to.value = temp;
+    [from.value, to.value] = [to.value, from.value];
     convertCurrency();
   }
+
+  // History UI
+  function updateHistoryUI() {
+    historyList.innerHTML = calculations.map(item => `<div class="history-item" onclick="display.value='${item.split('=')[1].trim()}';toggleHistory()">${item}</div>`).join('');
+  }
+
+  function clearHistory() { calculations = []; updateHistoryUI(); }
 </script>
 </body>
-        </html>
-        
+                                   </html>
+                                   
