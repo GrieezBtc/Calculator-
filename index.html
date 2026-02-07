@@ -1,302 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-    <title>Pro Calculator & Live Converter</title>
-    <style>
-        :root {
-            --bg: #f0f2f5;
-            --card: #ffffff;
-            --text: #1c1e21;
-            --accent: #007aff;
-            --btn-num: #f0f2f5;
-            --btn-op: #ff9500;
-            --btn-fn: #a5a5a5;
-            --shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Responsive Calculator</title>
+  <style>
+    /* Universal box-sizing fix */
+    * {
+      box-sizing: border-box;
+    }
 
-        .dark-mode {
-            --bg: #18191a;
-            --card: #242526;
-            --text: #e4e6eb;
-            --accent: #2e89ff;
-            --btn-num: #3a3b3c;
-            --btn-op: #f29339;
-            --btn-fn: #4e4f50;
-            --shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 15px; /* Added padding to prevent sticking to edges on mobile */
-            transition: background 0.3s ease;
-        }
+    .calculator {
+      width: 90%;
+      max-width: 350px;
+      padding: 20px;
+      border-radius: 15px;
+      background-color: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
 
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-            background: var(--card);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+    #display {
+      width: 100%;
+      height: 80px;
+      font-size: 2rem;
+      text-align: right;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background-color: #fafafa;
+      color: #333;
+    }
 
-        /* Responsive Header & Mode Switcher */
-        .controls { 
-            display: flex; 
-            gap: 6px; 
-            overflow-x: auto; /* Allows scrolling if buttons don't fit */
-            padding-bottom: 5px;
-            scrollbar-width: none;
-        }
-        .controls::-webkit-scrollbar { display: none; }
+    /* Grid layout for buttons */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
 
-        .btn-mode {
-            flex: 1; 
-            min-width: 70px;
-            padding: 10px 5px; 
-            border: none; 
-            border-radius: 12px;
-            background: var(--btn-num); 
-            color: var(--text); 
-            cursor: pointer; 
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .btn-mode.active { background: var(--accent); color: white; }
+    .calculator button {
+      width: 100%;
+      padding: 15px 5px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-        /* Display Area with Responsive Text */
-        .display-area { 
-            padding: 10px 5px;
-            margin-bottom: 5px;
-        }
-        #screen {
-            width: 100%; 
-            height: 70px; 
-            border: none; 
-            background: transparent;
-            text-align: right; 
-            font-size: clamp(30px, 8vw, 45px); /* Responsive font sizing */
-            color: var(--text); 
-            outline: none;
-            overflow: hidden;
-        }
+    .calculator button:hover {
+      background-color: #e0e0e0;
+    }
 
-        /* Converter Panel Adjustments */
-        #converter { 
-            display: none; 
-            padding: 15px; 
-            background: rgba(0,0,0,0.03); 
-            border-radius: 16px; 
-            animation: fadeIn 0.3s ease;
-        }
-        .conv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-        select, .c-input { 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: 1px solid rgba(0,0,0,0.1); 
-            width: 100%; 
-            font-size: 14px;
-            background: var(--card);
-            color: var(--text);
-        }
+    /* Special button styling */
+    .btn-equal {
+      background-color: #4CAF50 !important;
+      color: white;
+      grid-row: span 1; 
+    }
 
-        /* Scientific Grid Adjustment */
-        #scientific { 
-            display: none; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 8px; 
-            animation: fadeIn 0.3s ease;
-        }
+    .btn-operator {
+      background-color: #ff9500 !important;
+      color: white;
+    }
 
-        /* Grid Layout for Buttons */
-        .btn-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 12px; 
-        }
-        button {
-            height: 60px; 
-            border: none; 
-            border-radius: 18px; 
-            font-size: 20px;
-            font-weight: 600; 
-            cursor: pointer; 
-            background: var(--btn-num); 
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        button:active { opacity: 0.7; transform: scale(0.96); }
-
-        .btn-op { background: var(--btn-op); color: white; }
-        .btn-fn { background: var(--btn-fn); color: white; }
-        .btn-eq { background: var(--accent); color: white; }
-        .span-2 { grid-column: span 2; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Mobile Specific Tweaks */
-        @media (max-width: 360px) {
-            .app-container { padding: 15px; }
-            button { height: 50px; border-radius: 12px; font-size: 18px; }
-            .btn-grid { gap: 8px; }
-        }
-    </style>
+    .btn-clear {
+      background-color: #ff3b30 !important;
+      color: white;
+    }
+  </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="controls">
-        <button class="btn-mode active" id="m-calc">Standard</button>
-        <button class="btn-mode" id="m-sci">Scientific</button>
-        <button class="btn-mode" id="m-conv">Currency</button>
-        <button class="btn-mode" id="m-dark" style="min-width: 45px;">🌙</button>
-    </div>
-
-    <div id="converter">
-        <input type="number" id="c-amount" class="c-input" value="1" placeholder="Amount">
-        <div class="conv-grid">
-            <select id="c-from"></select>
-            <select id="c-to"></select>
-        </div>
-        <p id="c-res" style="text-align:center; margin-top:12px; font-weight:700; color: var(--accent);"></p>
-    </div>
-
-    <div id="scientific">
-        <button class="btn-mode" style="font-size: 14px;" data-val="Math.sin(">sin</button>
-        <button class="btn-mode" style="font-size: 14px;" data-val="Math.cos(">cos</button>
-        <button class="btn-mode" style="font-size: 14px;" data-val="Math.sqrt(">√</button>
-        <button class="btn-mode" style="font-size: 14px;" data-val="**">^</button>
-        <button class="btn-mode" style="font-size: 14px;" data-val="Math.PI">π</button>
-    </div>
-
-    <div class="display-area">
-        <input type="text" id="screen" readonly placeholder="0">
-    </div>
-
-    <div class="btn-grid">
-        <button class="btn-fn" id="clear">AC</button>
-        <button class="btn-fn" id="del">DEL</button>
-        <button class="btn-fn" data-val="%">%</button>
-        <button class="btn-op" data-val="/">÷</button>
-
-        <button class="btn-num" data-val="7">7</button>
-        <button class="btn-num" data-val="8">8</button>
-        <button class="btn-num" data-val="9">9</button>
-        <button class="btn-op" data-val="*">×</button>
-
-        <button class="btn-num" data-val="4">4</button>
-        <button class="btn-num" data-val="5">5</button>
-        <button class="btn-num" data-val="6">6</button>
-        <button class="btn-op" data-val="-">−</button>
-
-        <button class="btn-num" data-val="1">1</button>
-        <button class="btn-num" data-val="2">2</button>
-        <button class="btn-num" data-val="3">3</button>
-        <button class="btn-op" data-val="+">+</button>
-
-        <button class="btn-num span-2" data-val="0">0</button>
-        <button class="btn-num" data-val=".">.</button>
-        <button class="btn-eq" id="equals">=</button>
-    </div>
-</div>
-
-<script>
-    const screen = document.getElementById('screen');
-    let liveRates = { "NGN": 1, "USD": 0.00067, "EUR": 0.00061, "GBP": 0.00052 };
-
-    // --- Mode & Theme Logic ---
-    document.getElementById('m-calc').onclick = () => showMode('calc');
-    document.getElementById('m-sci').onclick = () => showMode('sci');
-    document.getElementById('m-conv').onclick = () => showMode('conv');
-    document.getElementById('m-dark').onclick = (e) => {
-        document.body.classList.toggle('dark-mode');
-        e.target.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-    };
-
-    function showMode(m) {
-        document.getElementById('scientific').style.display = (m === 'sci') ? 'grid' : 'none';
-        document.getElementById('converter').style.display = (m === 'conv') ? 'block' : 'none';
-        document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-        document.getElementById('m-' + (m === 'calc' ? 'calc' : m)).classList.add('active');
-    }
-
-    // --- Calculator Core Logic ---
-    document.querySelectorAll('[data-val]').forEach(btn => {
-        btn.onclick = () => { 
-            if(screen.value === 'Error') screen.value = '';
-            screen.value += btn.getAttribute('data-val'); 
-        };
-    });
-
-    document.getElementById('clear').onclick = () => screen.value = '';
-    document.getElementById('del').onclick = () => screen.value = screen.value.slice(0, -1);
+  <div class="calculator">
+    <input type="text" id="display" disabled placeholder="0">
     
-    document.getElementById('equals').onclick = () => {
-        try {
-            let exp = screen.value.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-            // Auto-close brackets
-            let open = (exp.match(/\(/g) || []).length;
-            let close = (exp.match(/\)/g) || []).length;
-            for(let i=0; i < (open-close); i++) exp += ')';
-            
-            let result = eval(exp);
-            screen.value = Number.isFinite(result) ? parseFloat(result.toFixed(8)) : 'Error';
-        } catch { screen.value = 'Error'; }
-    };
+    <div class="buttons">
+      <button class="btn-clear" onclick="clearDisplay()">C</button>
+      <button onclick="deleteChar()">DEL</button>
+      <button onclick="addValue('%')">%</button>
+      <button class="btn-operator" onclick="addValue('/')">/</button>
+      
+      <button onclick="addValue(7)">7</button>
+      <button onclick="addValue(8)">8</button>
+      <button onclick="addValue(9)">9</button>
+      <button class="btn-operator" onclick="addValue('*')">*</button>
+      
+      <button onclick="addValue(4)">4</button>
+      <button onclick="addValue(5)">5</button>
+      <button onclick="addValue(6)">6</button>
+      <button class="btn-operator" onclick="addValue('-')">-</button>
+      
+      <button onclick="addValue(1)">1</button>
+      <button onclick="addValue(2)">2</button>
+      <button onclick="addValue(3)">3</button>
+      <button class="btn-operator" onclick="addValue('+')">+</button>
+      
+      <button onclick="addValue(0)" style="grid-column: span 1;">0</button>
+      <button onclick="addValue('.')">.</button>
+      <button class="btn-equal" onclick="calculate()" style="grid-column: span 2;">=</button>
+    </div>
+  </div>
 
-    // --- Live Converter Logic ---
-    async function fetchRates() {
-        try {
-            const res = await fetch('https://open.er-api.com/v6/latest/NGN');
-            const data = await res.json();
-            if(data.rates) {
-                liveRates = data.rates;
-                setupConverter();
-            }
-        } catch { setupConverter(); } 
+  <script>
+    const display = document.getElementById('display');
+    
+    function addValue(value) {
+      display.value += value;
     }
-
-    function setupConverter() {
-        const from = document.getElementById('c-from');
-        const to = document.getElementById('c-to');
-        const options = Object.keys(liveRates).map(curr => `<option value="${curr}">${curr}</option>`).join('');
-        from.innerHTML = to.innerHTML = options;
-        from.value = "USD";
-        to.value = "NGN";
-        doConvert();
+    
+    function clearDisplay() {
+      display.value = '';
     }
-
-    function doConvert() {
-        const amt = document.getElementById('c-amount').value;
-        const f = document.getElementById('c-from').value;
-        const t = document.getElementById('c-to').value;
-        if(!amt) return;
-        const res = (amt / liveRates[f]) * liveRates[t];
-        document.getElementById('c-res').innerText = `${amt} ${f} = ${res.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${t}`;
+    
+    function deleteChar() {
+      display.value = display.value.slice(0, -1);
     }
-
-    document.getElementById('c-amount').oninput = doConvert;
-    document.getElementById('c-from').onchange = doConvert;
-    document.getElementById('c-to').onchange = doConvert;
-
-    // Initialization
-    fetchRates();
-</script>
-
+    
+    function calculate() {
+      try {
+        // Note: eval() is okay for simple practice, but 
+        // in production, use a math parser library.
+        display.value = eval(display.value);
+      } catch (error) {
+        display.value = 'Error';
+      }
+    }
+  </script>
 </body>
 </html>
