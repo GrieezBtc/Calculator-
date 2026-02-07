@@ -2,142 +2,307 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Responsive Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>Pro Scientific Calculator</title>
   <style>
-    /* Universal box-sizing fix */
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg-body: #f0f2f5;
+      --bg-calc: #ffffff;
+      --bg-display: #f8f9fa;
+      --text-main: #202124;
+      --text-secondary: #70757a;
+      --btn-bg: #f1f3f4;
+      --btn-hover: #e8eaed;
+      --accent: #fbaf00;
+      --sci-bg: #e8f0fe;
+      --sci-text: #1a73e8;
+      --success: #34a853;
+      --shadow: rgba(0, 0, 0, 0.1);
     }
 
+    [data-theme="dark"] {
+      --bg-body: #121212;
+      --bg-calc: #202124;
+      --bg-display: #2d2e31;
+      --text-main: #e8eaed;
+      --text-secondary: #bdc1c6;
+      --btn-bg: #3c4043;
+      --btn-hover: #4a4d51;
+      --sci-bg: #003366;
+      --sci-text: #8ab4f8;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; transition: all 0.2s ease; font-family: 'Segoe UI', Roboto, sans-serif; }
+
     body {
-      font-family: sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      background-color: #f4f4f9;
+      background-color: var(--bg-body);
+      padding: 10px;
     }
 
-    .calculator {
-      width: 90%;
-      max-width: 350px;
+    .calculator-container {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      max-height: 95vh;
+      background-color: var(--bg-calc);
+      border-radius: 28px;
       padding: 20px;
-      border-radius: 15px;
-      background-color: #fff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 40px var(--shadow);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header-tools {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .icon-btn {
+      background: var(--btn-bg);
+      border: none;
+      color: var(--text-main);
+      padding: 10px 15px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    #display-container {
+      background: var(--bg-display);
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: right;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    #history-preview {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      min-height: 24px;
+      word-wrap: break-word;
     }
 
     #display {
       width: 100%;
-      height: 80px;
-      font-size: 2rem;
+      border: none;
+      background: transparent;
+      font-size: 2.2rem;
+      color: var(--text-main);
       text-align: right;
-      padding: 15px;
-      margin-bottom: 20px;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      background-color: #fafafa;
-      color: #333;
+      outline: none;
+      padding: 0;
     }
 
-    /* Grid layout for buttons */
-    .buttons {
+    .grid-container {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
 
-    .calculator button {
-      width: 100%;
+    /* Scientific Panel - Hidden by default */
+    #sci-panel {
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--btn-hover);
+    }
+
+    #sci-panel.active { display: grid; }
+
+    button {
       padding: 15px 5px;
-      font-size: 1.2rem;
+      border-radius: 16px;
       border: none;
-      border-radius: 8px;
-      background-color: #f0f0f0;
+      background: var(--btn-bg);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      touch-action: manipulation;
     }
 
-    .calculator button:hover {
-      background-color: #e0e0e0;
-    }
+    button:hover { background: var(--btn-hover); }
+    button:active { transform: scale(0.92); }
 
-    /* Special button styling */
-    .btn-equal {
-      background-color: #4CAF50 !important;
-      color: white;
-      grid-row: span 1; 
-    }
+    .sci-btn { background: var(--sci-bg); color: var(--sci-text); font-size: 0.9rem; }
+    .operator { color: var(--accent); font-weight: bold; font-size: 1.4rem; }
+    .special { background: #ea4335; color: white; }
+    .equal { background: var(--success); color: white; grid-column: span 2; }
 
-    .btn-operator {
-      background-color: #ff9500 !important;
-      color: white;
+    /* History Slide-up */
+    #history-panel {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-calc);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      padding: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
     }
-
-    .btn-clear {
-      background-color: #ff3b30 !important;
-      color: white;
-    }
+    #history-panel.active { transform: translateY(0); }
+    .history-list { flex-grow: 1; overflow-y: auto; margin: 15px 0; }
+    .history-item { padding: 12px; border-bottom: 1px solid var(--btn-bg); text-align: right; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="calculator">
-    <input type="text" id="display" disabled placeholder="0">
-    
-    <div class="buttons">
-      <button class="btn-clear" onclick="clearDisplay()">C</button>
-      <button onclick="deleteChar()">DEL</button>
-      <button onclick="addValue('%')">%</button>
-      <button class="btn-operator" onclick="addValue('/')">/</button>
-      
-      <button onclick="addValue(7)">7</button>
-      <button onclick="addValue(8)">8</button>
-      <button onclick="addValue(9)">9</button>
-      <button class="btn-operator" onclick="addValue('*')">*</button>
-      
-      <button onclick="addValue(4)">4</button>
-      <button onclick="addValue(5)">5</button>
-      <button onclick="addValue(6)">6</button>
-      <button class="btn-operator" onclick="addValue('-')">-</button>
-      
-      <button onclick="addValue(1)">1</button>
-      <button onclick="addValue(2)">2</button>
-      <button onclick="addValue(3)">3</button>
-      <button class="btn-operator" onclick="addValue('+')">+</button>
-      
-      <button onclick="addValue(0)" style="grid-column: span 1;">0</button>
-      <button onclick="addValue('.')">.</button>
-      <button class="btn-equal" onclick="calculate()" style="grid-column: span 2;">=</button>
-    </div>
+<div class="calculator-container">
+  <div class="header-tools">
+    <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+    <button class="icon-btn" onclick="toggleSci()" id="sci-toggle">🧪 Scientific</button>
+    <button class="icon-btn" onclick="toggleHistory()">📜 History</button>
   </div>
 
-  <script>
-    const display = document.getElementById('display');
+  <div id="display-container">
+    <div id="history-preview"></div>
+    <input type="text" id="display" readonly placeholder="0">
+  </div>
+
+  <div id="sci-panel">
+    <button class="sci-btn" onclick="addSci('Math.sin(')">sin</button>
+    <button class="sci-btn" onclick="addSci('Math.cos(')">cos</button>
+    <button class="sci-btn" onclick="addSci('Math.sqrt(')">√</button>
+    <button class="sci-btn" onclick="addValue('**')">xʸ</button>
+    <button class="sci-btn" onclick="addValue('Math.PI')">π</button>
+    <button class="sci-btn" onclick="addValue('Math.E')">e</button>
+    <button class="sci-btn" onclick="addValue('(')">(</button>
+    <button class="sci-btn" onclick="addValue(')')">)</button>
+  </div>
+
+  <div class="grid-container">
+    <button class="special" onclick="clearDisplay()">C</button>
+    <button onclick="deleteChar()">⌫</button>
+    <button class="operator" onclick="addValue('%')">%</button>
+    <button class="operator" onclick="addValue('/')">÷</button>
     
-    function addValue(value) {
-      display.value += value;
-    }
+    <button onclick="addValue('7')">7</button>
+    <button onclick="addValue('8')">8</button>
+    <button onclick="addValue('9')">9</button>
+    <button class="operator" onclick="addValue('*')">x</button>
     
-    function clearDisplay() {
-      display.value = '';
-    }
+    <button onclick="addValue('4')">4</button>
+    <button onclick="addValue('5')">5</button>
+    <button onclick="addValue('6')">6</button>
+    <button class="operator" onclick="addValue('-')">-</button>
     
-    function deleteChar() {
-      display.value = display.value.slice(0, -1);
-    }
+    <button onclick="addValue('1')">1</button>
+    <button onclick="addValue('2')">2</button>
+    <button onclick="addValue('3')">3</button>
+    <button class="operator" onclick="addValue('+')">+</button>
     
-    function calculate() {
-      try {
-        // Note: eval() is okay for simple practice, but 
-        // in production, use a math parser library.
-        display.value = eval(display.value);
-      } catch (error) {
-        display.value = 'Error';
+    <button onclick="addValue('0')">0</button>
+    <button onclick="addValue('.')">.</button>
+    <button class="equal" onclick="calculate()">=</button>
+  </div>
+
+  <div id="history-panel">
+    <div class="header-tools">
+      <h3 style="margin:0; color:var(--text-main)">History</h3>
+      <button class="icon-btn" onclick="toggleHistory()">✕</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+    <button class="icon-btn" style="width:100%" onclick="clearHistory()">Clear History</button>
+  </div>
+</div>
+
+<script>
+  const display = document.getElementById('display');
+  const historyPreview = document.getElementById('history-preview');
+  const historyList = document.getElementById('history-list');
+  let calculations = [];
+
+  function toggleTheme() {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('theme-btn').innerText = isDark ? "🌙 Dark" : "☀️ Light";
+  }
+
+  function toggleSci() {
+    const panel = document.getElementById('sci-panel');
+    panel.classList.toggle('active');
+    document.getElementById('sci-toggle').style.color = panel.classList.contains('active') ? 'var(--accent)' : 'var(--text-main)';
+  }
+
+  function toggleHistory() {
+    document.getElementById('history-panel').classList.toggle('active');
+  }
+
+  function addValue(val) {
+    if (display.value === 'Error') clearDisplay();
+    display.value += val;
+  }
+
+  function addSci(func) {
+    display.value += func;
+  }
+
+  function clearDisplay() {
+    display.value = '';
+    historyPreview.innerText = '';
+  }
+
+  function deleteChar() {
+    display.value = display.value.slice(0, -1);
+  }
+
+  function calculate() {
+    try {
+      let expression = display.value;
+      if (!expression) return;
+      
+      // Basic display cleanup for history
+      let readable = expression.replace(/\*/g, 'x').replace(/Math\./g, '').replace(/\*\*/g, '^');
+      
+      let result = eval(expression);
+      
+      // Fix decimal issues like 0.1 + 0.2
+      if (result.toString().includes('.') && result.toString().split('.')[1].length > 8) {
+        result = parseFloat(result.toFixed(8));
       }
+
+      historyPreview.innerText = readable + " =";
+      calculations.unshift(`${readable} = ${result}`);
+      updateHistoryUI();
+      display.value = result;
+    } catch {
+      display.value = 'Error';
     }
-  </script>
+  }
+
+  function updateHistoryUI() {
+    historyList.innerHTML = calculations.length ? 
+      calculations.map(item => `<div class="history-item" onclick="useHistoryValue('${item.split('=')[1].trim()}')">${item}</div>`).join('') :
+      '<p style="text-align:center; color:var(--text-secondary)">Empty</p>';
+  }
+
+  function useHistoryValue(val) {
+    display.value = val;
+    toggleHistory();
+  }
+
+  function clearHistory() {
+    calculations = [];
+    updateHistoryUI();
+  }
+</script>
+
 </body>
 </html>
