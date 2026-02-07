@@ -2,103 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ultimate Calculator & NGN Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>Pro Calculator & Live Converter</title>
     <style>
         :root {
-            --bg: #f4f7f6;
+            --bg: #f0f2f5;
             --card: #ffffff;
-            --text: #333;
+            --text: #1c1e21;
             --accent: #007aff;
-            --btn-num: #f0f0f0;
+            --btn-num: #f0f2f5;
+            --btn-op: #ff9500;
+            --btn-fn: #a5a5a5;
+            --shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
+
         .dark-mode {
-            --bg: #1a1a2e;
-            --card: #16213e;
-            --text: #e9ecef;
-            --accent: #3498db;
-            --btn-num: #2c3e50;
+            --bg: #18191a;
+            --card: #242526;
+            --text: #e4e6eb;
+            --accent: #2e89ff;
+            --btn-num: #3a3b3c;
+            --btn-op: #f29339;
+            --btn-fn: #4e4f50;
+            --shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.2s; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px; /* Added padding to prevent sticking to edges on mobile */
+            transition: background 0.3s ease;
         }
+
         .app-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: var(--card);
-            border-radius: 25px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        /* Mode Switcher */
-        .controls { display: flex; gap: 8px; margin-bottom: 20px; }
+
+        /* Responsive Header & Mode Switcher */
+        .controls { 
+            display: flex; 
+            gap: 6px; 
+            overflow-x: auto; /* Allows scrolling if buttons don't fit */
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+        .controls::-webkit-scrollbar { display: none; }
+
         .btn-mode {
-            flex: 1; padding: 10px; border: none; border-radius: 10px;
-            background: var(--btn-num); color: var(--text); cursor: pointer; font-size: 13px;
+            flex: 1; 
+            min-width: 70px;
+            padding: 10px 5px; 
+            border: none; 
+            border-radius: 12px;
+            background: var(--btn-num); 
+            color: var(--text); 
+            cursor: pointer; 
+            font-size: 13px;
+            font-weight: 600;
         }
         .btn-mode.active { background: var(--accent); color: white; }
 
-        /* Display */
-        .display-area { margin-bottom: 20px; }
+        /* Display Area with Responsive Text */
+        .display-area { 
+            padding: 10px 5px;
+            margin-bottom: 5px;
+        }
         #screen {
-            width: 100%; height: 90px; border: none; background: transparent;
-            text-align: right; font-size: 40px; color: var(--text); outline: none;
+            width: 100%; 
+            height: 70px; 
+            border: none; 
+            background: transparent;
+            text-align: right; 
+            font-size: clamp(30px, 8vw, 45px); /* Responsive font sizing */
+            color: var(--text); 
+            outline: none;
+            overflow: hidden;
         }
 
-        /* Converter Panel */
-        #converter { display: none; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 15px; margin-bottom: 15px; }
-        .conv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        select, .c-input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; }
+        /* Converter Panel Adjustments */
+        #converter { 
+            display: none; 
+            padding: 15px; 
+            background: rgba(0,0,0,0.03); 
+            border-radius: 16px; 
+            animation: fadeIn 0.3s ease;
+        }
+        .conv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        select, .c-input { 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            width: 100%; 
+            font-size: 14px;
+            background: var(--card);
+            color: var(--text);
+        }
 
-        /* Scientific Panel */
-        #scientific { display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
+        /* Scientific Grid Adjustment */
+        #scientific { 
+            display: none; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+            animation: fadeIn 0.3s ease;
+        }
 
-        /* Main Grid */
-        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        /* Grid Layout for Buttons */
+        .btn-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+        }
         button {
-            height: 60px; border: none; border-radius: 15px; font-size: 18px;
-            font-weight: 600; cursor: pointer; background: var(--btn-num); color: var(--text);
+            height: 60px; 
+            border: none; 
+            border-radius: 18px; 
+            font-size: 20px;
+            font-weight: 600; 
+            cursor: pointer; 
+            background: var(--btn-num); 
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:active { transform: scale(0.95); }
-        .btn-op { background: #ff9500; color: white; }
-        .btn-fn { background: #a5a5a5; color: white; }
+        button:active { opacity: 0.7; transform: scale(0.96); }
+
+        .btn-op { background: var(--btn-op); color: white; }
+        .btn-fn { background: var(--btn-fn); color: white; }
         .btn-eq { background: var(--accent); color: white; }
         .span-2 { grid-column: span 2; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Mobile Specific Tweaks */
+        @media (max-width: 360px) {
+            .app-container { padding: 15px; }
+            button { height: 50px; border-radius: 12px; font-size: 18px; }
+            .btn-grid { gap: 8px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="controls">
-        <button class="btn-mode active" id="m-calc">Calc</button>
-        <button class="btn-mode" id="m-sci">Sci</button>
-        <button class="btn-mode" id="m-conv">Live NGN</button>
-        <button class="btn-mode" id="m-dark">🌙</button>
+        <button class="btn-mode active" id="m-calc">Standard</button>
+        <button class="btn-mode" id="m-sci">Scientific</button>
+        <button class="btn-mode" id="m-conv">Currency</button>
+        <button class="btn-mode" id="m-dark" style="min-width: 45px;">🌙</button>
     </div>
 
     <div id="converter">
-        <input type="number" id="c-amount" class="c-input" value="1">
+        <input type="number" id="c-amount" class="c-input" value="1" placeholder="Amount">
         <div class="conv-grid">
             <select id="c-from"></select>
             <select id="c-to"></select>
         </div>
-        <p id="c-res" style="text-align:center; margin-top:10px; font-weight:bold; font-size: 14px;"></p>
+        <p id="c-res" style="text-align:center; margin-top:12px; font-weight:700; color: var(--accent);"></p>
     </div>
 
     <div id="scientific">
-        <button class="btn-sci" data-val="Math.sin(">sin</button>
-        <button class="btn-sci" data-val="Math.cos(">cos</button>
-        <button class="btn-sci" data-val="Math.sqrt(">√</button>
-        <button class="btn-sci" data-val="**">^</button>
-        <button class="btn-sci" data-val="Math.PI">π</button>
+        <button class="btn-mode" style="font-size: 14px;" data-val="Math.sin(">sin</button>
+        <button class="btn-mode" style="font-size: 14px;" data-val="Math.cos(">cos</button>
+        <button class="btn-mode" style="font-size: 14px;" data-val="Math.sqrt(">√</button>
+        <button class="btn-mode" style="font-size: 14px;" data-val="**">^</button>
+        <button class="btn-mode" style="font-size: 14px;" data-val="Math.PI">π</button>
     </div>
 
     <div class="display-area">
@@ -106,7 +189,7 @@
     </div>
 
     <div class="btn-grid">
-        <button class="btn-fn" id="clear">C</button>
+        <button class="btn-fn" id="clear">AC</button>
         <button class="btn-fn" id="del">DEL</button>
         <button class="btn-fn" data-val="%">%</button>
         <button class="btn-op" data-val="/">÷</button>
@@ -119,7 +202,7 @@
         <button class="btn-num" data-val="4">4</button>
         <button class="btn-num" data-val="5">5</button>
         <button class="btn-num" data-val="6">6</button>
-        <button class="btn-op" data-val="-">-</button>
+        <button class="btn-op" data-val="-">−</button>
 
         <button class="btn-num" data-val="1">1</button>
         <button class="btn-num" data-val="2">2</button>
@@ -134,43 +217,50 @@
 
 <script>
     const screen = document.getElementById('screen');
-    let liveRates = { "NGN": 1, "USD": 0.00065, "EUR": 0.0006, "GBP": 0.0005 };
+    let liveRates = { "NGN": 1, "USD": 0.00067, "EUR": 0.00061, "GBP": 0.00052 };
 
-    // --- 1. Mode & Theme Handling ---
+    // --- Mode & Theme Logic ---
     document.getElementById('m-calc').onclick = () => showMode('calc');
     document.getElementById('m-sci').onclick = () => showMode('sci');
     document.getElementById('m-conv').onclick = () => showMode('conv');
-    document.getElementById('m-dark').onclick = () => document.body.classList.toggle('dark-mode');
+    document.getElementById('m-dark').onclick = (e) => {
+        document.body.classList.toggle('dark-mode');
+        e.target.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    };
 
     function showMode(m) {
         document.getElementById('scientific').style.display = (m === 'sci') ? 'grid' : 'none';
         document.getElementById('converter').style.display = (m === 'conv') ? 'block' : 'none';
         document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-        document.getElementById('m-' + m).classList.add('active');
+        document.getElementById('m-' + (m === 'calc' ? 'calc' : m)).classList.add('active');
     }
 
-    // --- 2. Calculator Core Logic ---
+    // --- Calculator Core Logic ---
     document.querySelectorAll('[data-val]').forEach(btn => {
-        btn.onclick = () => { screen.value += btn.getAttribute('data-val'); };
+        btn.onclick = () => { 
+            if(screen.value === 'Error') screen.value = '';
+            screen.value += btn.getAttribute('data-val'); 
+        };
     });
 
-    document.getElementById('clear').onclick = () => { screen.value = ''; };
-    document.getElementById('del').onclick = () => { screen.value = screen.value.slice(0, -1); };
+    document.getElementById('clear').onclick = () => screen.value = '';
+    document.getElementById('del').onclick = () => screen.value = screen.value.slice(0, -1);
     
     document.getElementById('equals').onclick = () => {
         try {
-            // Fix brackets if user forgot
-            let exp = screen.value;
+            let exp = screen.value.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+            // Auto-close brackets
             let open = (exp.match(/\(/g) || []).length;
             let close = (exp.match(/\)/g) || []).length;
             for(let i=0; i < (open-close); i++) exp += ')';
             
-            screen.value = eval(exp.replace('×', '*').replace('÷', '/'));
+            let result = eval(exp);
+            screen.value = Number.isFinite(result) ? parseFloat(result.toFixed(8)) : 'Error';
         } catch { screen.value = 'Error'; }
     };
 
-    // --- 3. Converter Logic ---
-    async function fetchNGNRates() {
+    // --- Live Converter Logic ---
+    async function fetchRates() {
         try {
             const res = await fetch('https://open.er-api.com/v6/latest/NGN');
             const data = await res.json();
@@ -178,7 +268,7 @@
                 liveRates = data.rates;
                 setupConverter();
             }
-        } catch { setupConverter(); } // Fallback to hardcoded
+        } catch { setupConverter(); } 
     }
 
     function setupConverter() {
@@ -195,16 +285,17 @@
         const amt = document.getElementById('c-amount').value;
         const f = document.getElementById('c-from').value;
         const t = document.getElementById('c-to').value;
+        if(!amt) return;
         const res = (amt / liveRates[f]) * liveRates[t];
-        document.getElementById('c-res').innerText = `${amt} ${f} = ${res.toLocaleString(undefined, {minimumFractionDigits: 2})} ${t}`;
+        document.getElementById('c-res').innerText = `${amt} ${f} = ${res.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${t}`;
     }
 
     document.getElementById('c-amount').oninput = doConvert;
     document.getElementById('c-from').onchange = doConvert;
     document.getElementById('c-to').onchange = doConvert;
 
-    // Start Up
-    fetchNGNRates();
+    // Initialization
+    fetchRates();
 </script>
 
 </body>
