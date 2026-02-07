@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-  <title>Pro Scientific Calculator</title>
+  <title>Pro Calc & Currency Converter</title>
   <style>
     :root {
       --bg-body: #f0f2f5;
@@ -28,12 +28,12 @@
       --text-secondary: #bdc1c6;
       --btn-bg: #3c4043;
       --btn-hover: #4a4d51;
-      --sci-bg: #003366;
+      --sci-bg: #1a273a;
       --sci-text: #8ab4f8;
       --shadow: rgba(0, 0, 0, 0.5);
     }
 
-    * { box-sizing: border-box; transition: all 0.2s ease; font-family: 'Segoe UI', Roboto, sans-serif; }
+    * { box-sizing: border-box; transition: all 0.2s ease; font-family: 'Segoe UI', sans-serif; }
 
     body {
       display: flex;
@@ -48,8 +48,6 @@
     .calculator-container {
       width: 100%;
       max-width: 400px;
-      height: auto;
-      max-height: 95vh;
       background-color: var(--bg-calc);
       border-radius: 28px;
       padding: 20px;
@@ -57,24 +55,28 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
-    .header-tools {
+    .nav-tabs {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
-    .icon-btn {
-      background: var(--btn-bg);
-      border: none;
-      color: var(--text-main);
-      padding: 10px 15px;
+    .nav-btn {
+      flex: 1;
+      padding: 10px;
       border-radius: 12px;
+      border: none;
+      background: var(--btn-bg);
+      color: var(--text-secondary);
       cursor: pointer;
-      font-size: 13px;
       font-weight: 600;
+    }
+
+    .nav-btn.active {
+      background: var(--accent);
+      color: white;
     }
 
     #display-container {
@@ -83,28 +85,45 @@
       padding: 15px;
       margin-bottom: 15px;
       text-align: right;
-      min-height: 120px;
+      min-height: 100px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-    }
-
-    #history-preview {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      min-height: 24px;
-      word-wrap: break-word;
+      justify-content: center;
     }
 
     #display {
       width: 100%;
       border: none;
       background: transparent;
-      font-size: 2.2rem;
+      font-size: 2rem;
       color: var(--text-main);
       text-align: right;
       outline: none;
-      padding: 0;
+    }
+
+    /* Converter Styling */
+    .converter-ui {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .converter-ui.active { display: flex; }
+
+    .currency-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    select, .conv-input {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--btn-hover);
+      background: var(--bg-display);
+      color: var(--text-main);
+      font-size: 1rem;
+      width: 100%;
     }
 
     .grid-container {
@@ -113,196 +132,148 @@
       gap: 10px;
     }
 
-    /* Scientific Panel - Hidden by default */
-    #sci-panel {
-      display: none;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--btn-hover);
-    }
-
-    #sci-panel.active { display: grid; }
-
     button {
       padding: 15px 5px;
       border-radius: 16px;
       border: none;
       background: var(--btn-bg);
       color: var(--text-main);
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1.2rem;
       cursor: pointer;
-      touch-action: manipulation;
     }
 
-    button:hover { background: var(--btn-hover); }
-    button:active { transform: scale(0.92); }
-
-    .sci-btn { background: var(--sci-bg); color: var(--sci-text); font-size: 0.9rem; }
-    .operator { color: var(--accent); font-weight: bold; font-size: 1.4rem; }
+    button:active { transform: scale(0.95); }
+    .operator { color: var(--accent); font-weight: bold; }
     .special { background: #ea4335; color: white; }
     .equal { background: var(--success); color: white; grid-column: span 2; }
+    .hidden { display: none !important; }
 
-    /* History Slide-up */
-    #history-panel {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg-calc);
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-      padding: 20px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-    }
-    #history-panel.active { transform: translateY(0); }
-    .history-list { flex-grow: 1; overflow-y: auto; margin: 15px 0; }
-    .history-item { padding: 12px; border-bottom: 1px solid var(--btn-bg); text-align: right; cursor: pointer; }
+    #loader { font-size: 0.8rem; color: var(--accent); display: none; }
   </style>
 </head>
 <body>
 
 <div class="calculator-container">
-  <div class="header-tools">
-    <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
-    <button class="icon-btn" onclick="toggleSci()" id="sci-toggle">🧪 Scientific</button>
-    <button class="icon-btn" onclick="toggleHistory()">📜 History</button>
+  <div class="nav-tabs">
+    <button class="nav-btn active" onclick="switchMode('calc')">Calculator</button>
+    <button class="nav-btn" onclick="switchMode('conv')">Currency</button>
+    <button class="nav-btn" style="flex:0.3" onclick="toggleTheme()">🌙</button>
   </div>
 
-  <div id="display-container">
-    <div id="history-preview"></div>
-    <input type="text" id="display" readonly placeholder="0">
-  </div>
-
-  <div id="sci-panel">
-    <button class="sci-btn" onclick="addSci('Math.sin(')">sin</button>
-    <button class="sci-btn" onclick="addSci('Math.cos(')">cos</button>
-    <button class="sci-btn" onclick="addSci('Math.sqrt(')">√</button>
-    <button class="sci-btn" onclick="addValue('**')">xʸ</button>
-    <button class="sci-btn" onclick="addValue('Math.PI')">π</button>
-    <button class="sci-btn" onclick="addValue('Math.E')">e</button>
-    <button class="sci-btn" onclick="addValue('(')">(</button>
-    <button class="sci-btn" onclick="addValue(')')">)</button>
-  </div>
-
-  <div class="grid-container">
-    <button class="special" onclick="clearDisplay()">C</button>
-    <button onclick="deleteChar()">⌫</button>
-    <button class="operator" onclick="addValue('%')">%</button>
-    <button class="operator" onclick="addValue('/')">÷</button>
-    
-    <button onclick="addValue('7')">7</button>
-    <button onclick="addValue('8')">8</button>
-    <button onclick="addValue('9')">9</button>
-    <button class="operator" onclick="addValue('*')">x</button>
-    
-    <button onclick="addValue('4')">4</button>
-    <button onclick="addValue('5')">5</button>
-    <button onclick="addValue('6')">6</button>
-    <button class="operator" onclick="addValue('-')">-</button>
-    
-    <button onclick="addValue('1')">1</button>
-    <button onclick="addValue('2')">2</button>
-    <button onclick="addValue('3')">3</button>
-    <button class="operator" onclick="addValue('+')">+</button>
-    
-    <button onclick="addValue('0')">0</button>
-    <button onclick="addValue('.')">.</button>
-    <button class="equal" onclick="calculate()">=</button>
-  </div>
-
-  <div id="history-panel">
-    <div class="header-tools">
-      <h3 style="margin:0; color:var(--text-main)">History</h3>
-      <button class="icon-btn" onclick="toggleHistory()">✕</button>
+  <div id="calc-ui">
+    <div id="display-container">
+      <input type="text" id="display" readonly placeholder="0">
     </div>
-    <div class="history-list" id="history-list"></div>
-    <button class="icon-btn" style="width:100%" onclick="clearHistory()">Clear History</button>
+    <div class="grid-container">
+      <button class="special" onclick="clearDisplay()">C</button>
+      <button onclick="deleteChar()">⌫</button>
+      <button class="operator" onclick="addValue('%')">%</button>
+      <button class="operator" onclick="addValue('/')">÷</button>
+      <button onclick="addValue('7')">7</button>
+      <button onclick="addValue('8')">8</button>
+      <button onclick="addValue('9')">9</button>
+      <button class="operator" onclick="addValue('*')">x</button>
+      <button onclick="addValue('4')">4</button>
+      <button onclick="addValue('5')">5</button>
+      <button onclick="addValue('6')">6</button>
+      <button class="operator" onclick="addValue('-')">-</button>
+      <button onclick="addValue('1')">1</button>
+      <button onclick="addValue('2')">2</button>
+      <button onclick="addValue('3')">3</button>
+      <button class="operator" onclick="addValue('+')">+</button>
+      <button onclick="addValue('0')">0</button>
+      <button onclick="addValue('.')">.</button>
+      <button class="equal" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <div id="conv-ui" class="converter-ui">
+    <div id="display-container" style="min-height: 140px;">
+      <div id="loader">Fetching rates...</div>
+      <div class="currency-row">
+        <input type="number" id="amount" class="conv-input" value="1" oninput="convertCurrency()">
+        <select id="fromCurrency" onchange="convertCurrency()">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="NGN" selected>NGN</option>
+        </select>
+      </div>
+      <div style="text-align:center; margin: 5px 0; cursor:pointer" onclick="swapCurrencies()">⇅</div>
+      <div class="currency-row">
+        <input type="text" id="result" class="conv-input" readonly placeholder="Result">
+        <select id="toCurrency" onchange="convertCurrency()">
+          <option value="USD" selected>USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="NGN">NGN</option>
+        </select>
+      </div>
+    </div>
+    <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Live rates via ExchangeRate-API</p>
   </div>
 </div>
 
 <script>
   const display = document.getElementById('display');
-  const historyPreview = document.getElementById('history-preview');
-  const historyList = document.getElementById('history-list');
-  let calculations = [];
+  
+  // Mode Switching
+  function switchMode(mode) {
+    const btns = document.querySelectorAll('.nav-btn');
+    btns[0].classList.toggle('active', mode === 'calc');
+    btns[1].classList.toggle('active', mode === 'conv');
+    document.getElementById('calc-ui').style.display = mode === 'calc' ? 'block' : 'none';
+    document.getElementById('conv-ui').classList.toggle('active', mode === 'conv');
+    if(mode === 'conv') convertCurrency();
+  }
 
   function toggleTheme() {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
     document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('theme-btn').innerText = isDark ? "🌙 Dark" : "☀️ Light";
   }
 
-  function toggleSci() {
-    const panel = document.getElementById('sci-panel');
-    panel.classList.toggle('active');
-    document.getElementById('sci-toggle').style.color = panel.classList.contains('active') ? 'var(--accent)' : 'var(--text-main)';
-  }
-
-  function toggleHistory() {
-    document.getElementById('history-panel').classList.toggle('active');
-  }
-
-  function addValue(val) {
-    if (display.value === 'Error') clearDisplay();
-    display.value += val;
-  }
-
-  function addSci(func) {
-    display.value += func;
-  }
-
-  function clearDisplay() {
-    display.value = '';
-    historyPreview.innerText = '';
-  }
-
-  function deleteChar() {
-    display.value = display.value.slice(0, -1);
-  }
-
+  // Calculator Logic
+  function addValue(val) { display.value += val; }
+  function clearDisplay() { display.value = ''; }
+  function deleteChar() { display.value = display.value.slice(0, -1); }
   function calculate() {
-    try {
-      let expression = display.value;
-      if (!expression) return;
-      
-      // Basic display cleanup for history
-      let readable = expression.replace(/\*/g, 'x').replace(/Math\./g, '').replace(/\*\*/g, '^');
-      
-      let result = eval(expression);
-      
-      // Fix decimal issues like 0.1 + 0.2
-      if (result.toString().includes('.') && result.toString().split('.')[1].length > 8) {
-        result = parseFloat(result.toFixed(8));
-      }
+    try { display.value = eval(display.value); } 
+    catch { display.value = 'Error'; }
+  }
 
-      historyPreview.innerText = readable + " =";
-      calculations.unshift(`${readable} = ${result}`);
-      updateHistoryUI();
-      display.value = result;
-    } catch {
-      display.value = 'Error';
+  // Currency Logic
+  async function convertCurrency() {
+    const amount = document.getElementById('amount').value;
+    const from = document.getElementById('fromCurrency').value;
+    const to = document.getElementById('toCurrency').value;
+    const resultInput = document.getElementById('result');
+    const loader = document.getElementById('loader');
+
+    if (!amount || amount <= 0) return;
+
+    loader.style.display = 'block';
+    try {
+      const response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+      const data = await response.json();
+      const rate = data.rates[to];
+      const converted = (amount * rate).toFixed(2);
+      resultInput.value = converted;
+    } catch (error) {
+      resultInput.value = "Error fetching rates";
+    } finally {
+      loader.style.display = 'none';
     }
   }
 
-  function updateHistoryUI() {
-    historyList.innerHTML = calculations.length ? 
-      calculations.map(item => `<div class="history-item" onclick="useHistoryValue('${item.split('=')[1].trim()}')">${item}</div>`).join('') :
-      '<p style="text-align:center; color:var(--text-secondary)">Empty</p>';
-  }
-
-  function useHistoryValue(val) {
-    display.value = val;
-    toggleHistory();
-  }
-
-  function clearHistory() {
-    calculations = [];
-    updateHistoryUI();
+  function swapCurrencies() {
+    const from = document.getElementById('fromCurrency');
+    const to = document.getElementById('toCurrency');
+    const temp = from.value;
+    from.value = to.value;
+    to.value = temp;
+    convertCurrency();
   }
 </script>
-
 </body>
-</html>
+        </html>
+        
