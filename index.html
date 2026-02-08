@@ -5,105 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
   <title>Pro Calc & Currency</title>
   
+  <meta name="description" content="Professional Scientific Calculator and Live NGN Currency Converter">
+  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#fbaf00">
 
-  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pro%20Calculator%22,%22short_name%22:%22ProCalc%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#fbaf00%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/5359/5359400.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pro%20Calculator%22,%22short_name%22:%22ProCalc%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#fbaf00%22,%22icons%22:[{%22src%22:%22/icon.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
 
   <style>
     :root {
-      --bg-body: #f0f2f5;
-      --bg-calc: #ffffff;
-      --bg-display: #f8f9fa;
-      --text-main: #202124;
-      --btn-bg: #f1f3f4;
-      --accent: #fbaf00;
-      --success: #34a853;
-      --error: #ea4335;
+      --bg-body: #f0f2f5; --bg-calc: #ffffff; --bg-display: #f8f9fa;
+      --text-main: #202124; --btn-bg: #f1f3f4; --accent: #fbaf00;
+      --success: #34a853; --error: #ea4335;
     }
-
     [data-theme="dark"] {
-      --bg-body: #121212;
-      --bg-calc: #202124;
-      --bg-display: #2d2e31;
-      --text-main: #e8eaed;
-      --btn-bg: #3c4043;
+      --bg-body: #121212; --bg-calc: #202124; --bg-display: #2d2e31;
+      --text-main: #e8eaed; --btn-bg: #3c4043;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg-body); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+    
+    .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; }
+    @media (min-width: 420px) { .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); } }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    #install-banner { display: none; background: var(--accent); color: white; padding: 14px; text-align: center; border-radius: 12px; margin-bottom: 10px; font-weight: bold; cursor: pointer; animation: slideDown 0.5s ease; }
+    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    body {
-      background-color: var(--bg-body);
-      height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 420px;
-      height: 100%;
-      background: var(--bg-calc);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      padding: 15px;
-    }
-
-    @media (min-width: 420px) {
-      .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    }
-
-    .nav { display: flex; gap: 5px; margin-bottom: 10px; }
-    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; }
+    .nav { display: flex; gap: 6px; margin-bottom: 10px; }
+    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.85rem; }
     .nav button.active { background: var(--accent); color: white; }
 
-    #screen {
-      background: var(--bg-display);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: flex-end;
-      min-height: 140px;
-    }
-
-    #preview { font-size: 1rem; color: #888; min-height: 1.2rem; }
-    #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; }
+    #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 150px; }
+    #preview { font-size: 1rem; color: #888; min-height: 1.2rem; margin-bottom: 4px; }
+    #main-input { font-size: 2.6rem; color: var(--text-main); text-align: right; word-break: break-all; line-height: 1.1; }
 
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; }
     #sci-grid { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
     #sci-grid.active { display: grid; }
 
-    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.4rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; -webkit-tap-highlight-color: transparent; }
+    button.key:active { opacity: 0.7; transform: scale(0.95); }
     .op { color: var(--accent); font-weight: 700; }
     .eq { background: var(--success) !important; color: white; grid-column: span 2; border-radius: 35px; }
     .clr { background: var(--error) !important; color: white; }
-    .sci-key { font-size: 0.9rem; background: #e8f0fe; color: #1a73e8; }
+    .sci-key { font-size: 1rem; background: #e8f0fe; color: #1a73e8; }
+    [data-theme="dark"] .sci-key { background: #1a273a; color: #8ab4f8; }
 
-    /* Install Banner Fix */
-    #install-banner {
-      display: none;
-      background: var(--accent);
-      color: white;
-      padding: 10px;
-      text-align: center;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    #conv-mode { display: none; flex-direction: column; padding: 10px; }
+    .curr-input-group { background: var(--bg-display); padding: 20px; border-radius: 20px; margin-top: 10px; }
+    .curr-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+    select, input.amt { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); font-size: 1rem; }
   </style>
 </head>
 <body data-theme="light">
 
 <div class="app-container">
-  <div id="install-banner" onclick="installApp()">✨ Install App for Offline Use</div>
+  <div id="install-banner" onclick="installApp()">✨ Install ProCalc App</div>
 
   <div class="nav">
     <button id="tab-calc" class="active" onclick="setMode('calc')">Calculator</button>
@@ -145,15 +106,27 @@
       <button class="key eq" onclick="run()">=</button>
     </div>
   </div>
-  
-  <div id="conv-mode" style="display:none; padding-top:20px;">
-      <p style="text-align:center; margin-bottom:10px; color:var(--text-main)">Currency Converter (NGN)</p>
-      <input type="number" id="amt" style="width:100%; padding:15px; margin-bottom:10px;" value="1" oninput="convert()">
-      <div style="display:flex; gap:10px;">
-          <select id="from" onchange="convert()" style="flex:1; padding:10px;"><option value="USD">USD</option><option value="NGN">NGN</option></select>
-          <select id="to" onchange="convert()" style="flex:1; padding:10px;"><option value="NGN">NGN</option><option value="USD">USD</option></select>
+
+  <div id="conv-mode">
+      <div class="curr-input-group">
+          <p style="text-align:center; color:var(--text-main); font-weight:600; margin-bottom:15px;">Live Rates (NGN)</p>
+          <input type="number" id="amt" class="amt" value="1" oninput="convert()">
+          <div class="curr-row">
+              <select id="from" onchange="convert()">
+                  <option value="USD">USD</option>
+                  <option value="NGN">NGN</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+              </select>
+              <span style="color:var(--accent)">➜</span>
+              <select id="to" onchange="convert()">
+                  <option value="NGN" selected>NGN</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+              </select>
+          </div>
+          <h2 id="res" style="text-align:center; color:var(--accent); font-size:2.2rem; margin-top:15px;">0.00</h2>
       </div>
-      <h2 id="res" style="text-align:center; margin-top:20px; color:var(--accent);">0.00</h2>
   </div>
 </div>
 
@@ -161,7 +134,14 @@
   let currentInput = "0";
   let deferredPrompt;
 
-  // PWA Installation Logic
+  // Official Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+
+  // PWA Install Logic
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -172,34 +152,49 @@
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        document.getElementById('install-banner').style.display = 'none';
-      }
+      if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
       deferredPrompt = null;
     }
   }
 
-  // Register a dummy service worker for PWA compliance
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ID0+IGV2KTs=');
-    });
-  }
-
-  // UI Logic
+  // Calc Logic
   function setMode(m) {
     document.getElementById('calc-mode').style.display = m === 'calc' ? 'contents' : 'none';
-    document.getElementById('conv-mode').style.display = m === 'conv' ? 'block' : 'none';
+    document.getElementById('conv-mode').style.display = m === 'conv' ? 'flex' : 'none';
     document.getElementById('tab-calc').className = m === 'calc' ? 'active' : '';
     document.getElementById('tab-conv').className = m === 'conv' ? 'active' : '';
+    if(m === 'conv') convert();
   }
 
-  function press(v) { if(currentInput === "0") currentInput = v; else currentInput += v; update(); }
-  function pressSci(f) { currentInput += f; update(); }
-  function cls() { currentInput = "0"; update(); }
-  function del() { currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; update(); }
-  function update() { document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x'); }
-  function run() { try { currentInput = eval(currentInput).toString(); update(); } catch { currentInput = "Error"; update(); } }
+  function press(v) { 
+    if(currentInput === "0" && !isNaN(v)) currentInput = v; 
+    else currentInput += v; 
+    updateDisplay(); 
+  }
+  function pressSci(f) { 
+    if(currentInput === "0") currentInput = f;
+    else currentInput += f;
+    updateDisplay();
+  }
+  function cls() { currentInput = "0"; document.getElementById('preview').innerText = ""; updateDisplay(); }
+  function del() { currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; updateDisplay(); }
+  
+  function updateDisplay() { 
+    document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, ''); 
+  }
+  
+  function run() {
+    try {
+      let result = eval(currentInput);
+      document.getElementById('preview').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, '') + " =";
+      currentInput = Number.isInteger(result) ? result.toString() : result.toFixed(4).replace(/\.?0+$/, "");
+      updateDisplay();
+    } catch {
+      document.getElementById('main-input').innerText = "Error";
+      setTimeout(cls, 1500);
+    }
+  }
+
   function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
   function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
 
@@ -207,9 +202,12 @@
     const a = document.getElementById('amt').value;
     const f = document.getElementById('from').value;
     const t = document.getElementById('to').value;
-    const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
-    const d = await r.json();
-    document.getElementById('res').innerText = (a * d.rates[t]).toFixed(2) + " " + t;
+    if(!a) return;
+    try {
+      const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
+      const d = await r.json();
+      document.getElementById('res').innerText = (a * d.rates[t]).toLocaleString(undefined, {minimumFractionDigits: 2}) + " " + t;
+    } catch { document.getElementById('res').innerText = "Offline"; }
   }
 </script>
 </body>
