@@ -23,17 +23,17 @@
       --text-main: #e8eaed; --btn-bg: #3c4043;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-body); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+    body { background-color: var(--bg-body); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; transition: background 0.3s; }
     
-    .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; }
+    .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; transition: background 0.3s; }
     @media (min-width: 420px) { .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); } }
 
     .nav { display: flex; gap: 5px; margin-bottom: 10px; }
-    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: transform 0.1s; }
+    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: transform 0.1s; }
     .nav button:active { transform: scale(0.95); }
     .nav button.active { background: var(--accent); color: white; }
 
-    #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; }
+    #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; transition: background 0.3s; }
     #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; font-weight: 500; }
     #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; word-break: break-all; line-height: 1.1; }
 
@@ -54,11 +54,11 @@
 
     #conv-mode { display: none; flex-direction: column; padding: 10px; }
     .conv-box { background: var(--bg-display); padding: 20px; border-radius: 20px; text-align: center; }
-    select, input.amt { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; font-size: 1rem; }
+    select, input.amt { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; font-size: 0.95rem; }
     .swap-btn { background: var(--btn-bg); border: none; color: var(--accent); padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; margin: 5px 0; }
   </style>
 </head>
-<body data-theme="light">
+<body>
 
 <div class="app-container">
   <div id="history-panel">
@@ -71,11 +71,11 @@
   </div>
 
   <div class="nav">
-    <button id="tab-calc" class="active" onclick="setMode('calc'); haptic();">Calculator</button>
+    <button id="tab-calc" class="active" onclick="setMode('calc'); haptic();">Calc</button>
     <button id="tab-conv" onclick="setMode('conv'); haptic();">Currency</button>
     <button onclick="toggleSci(); haptic();">🧪 Sci</button>
     <button onclick="toggleHistory(true); haptic();">📜 Hist</button>
-    <button onclick="toggleTheme(); haptic();">🌙</button>
+    <button id="theme-icon" onclick="toggleTheme(); haptic();">🌙</button>
   </div>
 
   <div id="calc-mode" style="display: contents;">
@@ -116,21 +116,37 @@
     <div class="conv-box">
       <input type="number" id="amt" class="amt" value="1" oninput="convert()">
       <select id="from" onchange="convert()">
-        <option value="NGN" selected>🇳🇬 NGN - Nigeria</option>
-        <option value="GHS">🇬🇭 GHS - Ghana</option>
-        <option value="ZAR">🇿🇦 ZAR - South Africa</option>
-        <option value="KES">🇰🇪 KES - Kenya</option>
-        <option value="USD">🇺🇸 USD - US Dollar</option>
-        <option value="EUR">🇪🇺 EUR - Euro</option>
-        <option value="GBP">🇬🇧 GBP - UK Pound</option>
+        <optgroup label="Africa">
+          <option value="NGN" selected>🇳🇬 Nigeria - NGN</option>
+          <option value="GHS">🇬🇭 Ghana - GHS</option>
+          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
+          <option value="KES">🇰🇪 Kenya - KES</option>
+          <option value="EGP">🇪🇬 Egypt - EGP</option>
+          <option value="MAD">🇲🇦 Morocco - MAD</option>
+        </optgroup>
+        <optgroup label="Europe/Global">
+          <option value="USD">🇺🇸 USA - USD</option>
+          <option value="EUR">🇪🇺 Europe - EUR</option>
+          <option value="GBP">🇬🇧 UK - GBP</option>
+          <option value="CHF">🇨🇭 Switzerland - CHF</option>
+          <option value="CAD">🇨🇦 Canada - CAD</option>
+        </optgroup>
       </select>
       <button class="swap-btn" onclick="swapCurrencies(); haptic();">⇅ Swap Rates</button>
       <select id="to" onchange="convert()">
-        <option value="USD" selected>🇺🇸 USD - US Dollar</option>
-        <option value="NGN">🇳🇬 NGN - Nigeria</option>
-        <option value="EUR">🇪🇺 EUR - Euro</option>
+        <optgroup label="Africa">
+          <option value="NGN">🇳🇬 Nigeria - NGN</option>
+          <option value="GHS">🇬🇭 Ghana - GHS</option>
+          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
+          <option value="KES">🇰🇪 Kenya - KES</option>
+        </optgroup>
+        <optgroup label="Europe/Global">
+          <option value="USD" selected>🇺🇸 USA - USD</option>
+          <option value="EUR">🇪🇺 Europe - EUR</option>
+          <option value="GBP">🇬🇧 UK - GBP</option>
+        </optgroup>
       </select>
-      <h2 id="res" style="color:var(--accent); font-size:2.2rem; margin-top:10px;">0.00</h2>
+      <h2 id="res" style="color:var(--accent); font-size:1.8rem; margin-top:10px;">0.00</h2>
     </div>
   </div>
 </div>
@@ -139,18 +155,31 @@
   let currentInput = "0";
   let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
 
-  if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }
-
-  // Haptic Feedback Function
-  function haptic() {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(15); // Short 15ms vibrate
-    }
+  function applyTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('user-theme', theme);
+    document.getElementById('theme-icon').innerText = theme === 'dark' ? '☀️' : '🌙';
   }
 
+  const systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  systemQuery.addEventListener('change', (e) => {
+    if (!localStorage.getItem('user-theme')) applyTheme(e.matches ? 'dark' : 'light');
+  });
+
+  function toggleTheme() {
+    const current = document.body.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  const savedTheme = localStorage.getItem('user-theme');
+  if (savedTheme) applyTheme(savedTheme);
+  else applyTheme(systemQuery.matches ? 'dark' : 'light');
+
+  function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
+  
   function setMode(m) {
     document.getElementById('calc-mode').style.display = m === 'calc' ? 'contents' : 'none';
-    document.getElementById('conv-mode').style.display = m === 'conv' ? 'block' : 'none';
+    document.getElementById('conv-mode').style.display = m === 'conv' ? 'flex' : 'none';
     document.getElementById('tab-calc').className = m === 'calc' ? 'active' : '';
     document.getElementById('tab-conv').className = m === 'conv' ? 'active' : '';
     if(m === 'conv') convert();
@@ -168,13 +197,8 @@
       let openBrackets = (expr.match(/\(/g) || []).length;
       let closeBrackets = (expr.match(/\)/g) || []).length;
       while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
-      
       let preview = eval(expr);
-      if (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) {
-        document.getElementById('live-preview').innerText = preview.toLocaleString(undefined, {maximumFractionDigits: 6});
-      } else {
-        document.getElementById('live-preview').innerText = "";
-      }
+      document.getElementById('live-preview').innerText = (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) ? preview.toLocaleString(undefined, {maximumFractionDigits: 6}) : "";
     } catch { document.getElementById('live-preview').innerText = ""; }
   }
   
@@ -184,31 +208,18 @@
       let openBrackets = (expr.match(/\(/g) || []).length;
       let closeBrackets = (expr.match(/\)/g) || []).length;
       while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
-      
       let res = eval(expr);
       history.unshift(currentInput.replace(/\*/g, 'x').replace(/Math\./g, '') + " = " + res);
       if(history.length > 20) history.pop();
       localStorage.setItem('calcHistory', JSON.stringify(history));
-      
       currentInput = res.toString();
       document.getElementById('live-preview').innerText = "";
       update();
     } catch { currentInput = "Error"; update(); }
   }
 
-  function swapCurrencies() {
-    const from = document.getElementById('from');
-    const to = document.getElementById('to');
-    const temp = from.value;
-    from.value = to.value;
-    to.value = temp;
-    convert();
-  }
-
   async function convert() {
-    const a = document.getElementById('amt').value;
-    const f = document.getElementById('from').value;
-    const t = document.getElementById('to').value;
+    const a = document.getElementById('amt').value, f = document.getElementById('from').value, t = document.getElementById('to').value;
     if(!a) return;
     try {
       const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
@@ -217,12 +228,18 @@
     } catch { document.getElementById('res').innerText = "Offline"; }
   }
 
-  function toggleHistory(show) { document.getElementById('history-panel').classList.toggle('active', show); if(show) renderHistory(); }
+  function swapCurrencies() {
+    const from = document.getElementById('from'), to = document.getElementById('to'), tmp = from.value;
+    from.value = to.value; to.value = tmp; convert();
+  }
+
+  function toggleHistory(s) { document.getElementById('history-panel').classList.toggle('active', s); if(s) renderHistory(); }
   function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i}); haptic();">${h}</div>`).join(''); }
   function clearHistory() { history = []; localStorage.removeItem('calcHistory'); renderHistory(); }
   function useHistory(i) { currentInput = history[i].split('=')[1].trim(); update(); toggleHistory(false); }
-  function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
   function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
+
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
 </html>
