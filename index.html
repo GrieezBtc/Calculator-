@@ -116,28 +116,47 @@
     <div class="conv-box">
       <input type="number" id="amt" class="amt" value="1" oninput="convert()">
       <select id="from" onchange="convert()">
-  <optgroup label="Africa">
-    <option value="NGN" selected>🇳🇬 Nigeria - NGN</option>
-    <option value="GHS">🇬🇭 Ghana - GHS</option>
-    <option value="ZAR">🇿🇦 South Africa - ZAR</option>
-    <option value="KES">🇰🇪 Kenya - KES</option>
-    <option value="EGP">🇪🇬 Egypt - EGP</option>
-  </optgroup>
-  <optgroup label="Europe/Global">
-    <option value="USD">🇺🇸 USA - USD</option>
-    <option value="EUR">🇪🇺 Europe - EUR</option>
-    <option value="GBP">🇬🇧 UK - GBP</option>
-    <option value="CAD">🇨🇦 Canada - CAD</option>
-  </optgroup>
-  <optgroup label="Asia/Oceania">
-    <option value="AED">🇦🇪 UAE - AED</option>
-    <option value="CNY">🇨🇳 China - CNY</option>
-    <option value="INR">🇮🇳 India - INR</option>
-    <option value="AUD">🇦🇺 Australia - AUD</option>
-    <option value="JPY">🇯🇵 Japan - JPY</option>
-  </optgroup>
+        <optgroup label="Africa">
+          <option value="NGN" selected>🇳🇬 Nigeria - NGN</option>
+          <option value="GHS">🇬🇭 Ghana - GHS</option>
+          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
+          <option value="KES">🇰🇪 Kenya - KES</option>
+          <option value="EGP">🇪🇬 Egypt - EGP</option>
+        </optgroup>
+        <optgroup label="Europe/Global">
+          <option value="USD">🇺🇸 USA - USD</option>
+          <option value="EUR">🇪🇺 Europe - EUR</option>
+          <option value="GBP">🇬🇧 UK - GBP</option>
+          <option value="CAD">🇨🇦 Canada - CAD</option>
+        </optgroup>
+        <optgroup label="Asia/Oceania">
+          <option value="AED">🇦🇪 UAE - AED</option>
+          <option value="CNY">🇨🇳 China - CNY</option>
+          <option value="INR">🇮🇳 India - INR</option>
+          <option value="AUD">🇦🇺 Australia - AUD</option>
+          <option value="JPY">🇯🇵 Japan - JPY</option>
+        </optgroup>
       </select>
-       <h2 id="res" style="color:var(--accent); font-size:1.8rem; margin-top:10px;">0.00</h2>
+      <button class="swap-btn" onclick="swapCurrencies(); haptic();">⇅ Swap Rates</button>
+      <select id="to" onchange="convert()">
+        <optgroup label="Africa">
+          <option value="NGN">🇳🇬 Nigeria - NGN</option>
+          <option value="GHS">🇬🇭 Ghana - GHS</option>
+          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
+          <option value="KES">🇰🇪 Kenya - KES</option>
+        </optgroup>
+        <optgroup label="Europe/Global">
+          <option value="USD" selected>🇺🇸 USA - USD</option>
+          <option value="EUR">🇪🇺 Europe - EUR</option>
+          <option value="GBP">🇬🇧 UK - GBP</option>
+        </optgroup>
+        <optgroup label="Asia/Oceania">
+          <option value="AED">🇦🇪 UAE - AED</option>
+          <option value="CNY">🇨🇳 China - CNY</option>
+          <option value="INR">🇮🇳 India - INR</option>
+        </optgroup>
+      </select>
+      <h2 id="res" style="color:var(--accent); font-size:1.8rem; margin-top:10px;">0.00</h2>
     </div>
   </div>
 </div>
@@ -146,28 +165,26 @@
   let currentInput = "0";
   let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
 
+  // --- Theme Logic ---
   function applyTheme(theme) {
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('user-theme', theme);
     document.getElementById('theme-icon').innerText = theme === 'dark' ? '☀️' : '🌙';
   }
-
   const systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
   systemQuery.addEventListener('change', (e) => {
     if (!localStorage.getItem('user-theme')) applyTheme(e.matches ? 'dark' : 'light');
   });
-
   function toggleTheme() {
     const current = document.body.getAttribute('data-theme');
     applyTheme(current === 'dark' ? 'light' : 'dark');
   }
-
   const savedTheme = localStorage.getItem('user-theme');
   if (savedTheme) applyTheme(savedTheme);
   else applyTheme(systemQuery.matches ? 'dark' : 'light');
 
+  // --- Haptics & General ---
   function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
-  
   function setMode(m) {
     document.getElementById('calc-mode').style.display = m === 'calc' ? 'contents' : 'none';
     document.getElementById('conv-mode').style.display = m === 'conv' ? 'flex' : 'none';
@@ -176,11 +193,11 @@
     if(m === 'conv') convert();
   }
 
+  // --- Calculator Engine ---
   function press(v) { if(currentInput === "0" && !isNaN(v)) currentInput = v; else currentInput += v; update(); }
   function pressSci(f) { if(currentInput === "0") currentInput = f; else currentInput += f; update(); }
   function cls() { currentInput = "0"; document.getElementById('live-preview').innerText = ""; update(); }
   function del() { currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; update(); }
-
   function update() {
     document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, '');
     try {
@@ -192,7 +209,6 @@
       document.getElementById('live-preview').innerText = (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) ? preview.toLocaleString(undefined, {maximumFractionDigits: 6}) : "";
     } catch { document.getElementById('live-preview').innerText = ""; }
   }
-  
   function run() {
     try {
       let expr = currentInput;
@@ -209,6 +225,7 @@
     } catch { currentInput = "Error"; update(); }
   }
 
+  // --- Currency Engine ---
   async function convert() {
     const a = document.getElementById('amt').value, f = document.getElementById('from').value, t = document.getElementById('to').value;
     if(!a) return;
@@ -218,12 +235,12 @@
       document.getElementById('res').innerText = (a * d.rates[t]).toLocaleString(undefined, {minimumFractionDigits: 2}) + " " + t;
     } catch { document.getElementById('res').innerText = "Offline"; }
   }
-
   function swapCurrencies() {
     const from = document.getElementById('from'), to = document.getElementById('to'), tmp = from.value;
     from.value = to.value; to.value = tmp; convert();
   }
 
+  // --- UI Helpers ---
   function toggleHistory(s) { document.getElementById('history-panel').classList.toggle('active', s); if(s) renderHistory(); }
   function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i}); haptic();">${h}</div>`).join(''); }
   function clearHistory() { history = []; localStorage.removeItem('calcHistory'); renderHistory(); }
@@ -233,4 +250,5 @@
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
-</html>
+          </html>
+          
