@@ -29,55 +29,57 @@
     @media (min-width: 420px) { .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); } }
 
     .nav { display: flex; gap: 5px; margin-bottom: 10px; }
-    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; }
+    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.75rem; }
     .nav button.active { background: var(--accent); color: white; }
 
     #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; }
-    #preview { font-size: 1rem; color: #888; min-height: 1.2rem; }
-    #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; }
+    #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; }
+    #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; word-break: break-all; line-height: 1.1; }
 
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; }
     #sci-grid { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
     #sci-grid.active { display: grid; }
 
-    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; }
+    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+    button.key:active { opacity: 0.6; }
     .op { color: var(--accent); font-weight: 700; }
     .eq { background: var(--success) !important; color: white; grid-column: span 2; border-radius: 35px; }
     .clr { background: var(--error) !important; color: white; }
     .sci-key { font-size: 0.9rem; background: #e8f0fe; color: #1a73e8; }
 
-    /* Help Modal */
-    #help-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-calc); z-index: 200; display: none; padding: 30px; flex-direction: column; border-radius: inherit; }
-    #help-panel.active { display: flex; }
-    .help-content { flex: 1; overflow-y: auto; color: var(--text-main); line-height: 1.6; }
+    #history-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-calc); z-index: 100; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding: 20px; border-radius: inherit; }
+    #history-panel.active { transform: translateY(0); }
+    .history-item { padding: 15px; border-bottom: 1px solid var(--btn-bg); text-align: right; color: var(--text-main); cursor: pointer; }
+
+    #conv-mode { display: none; flex-direction: column; padding: 10px; }
+    .conv-box { background: var(--bg-display); padding: 20px; border-radius: 20px; text-align: center; }
+    select, input.amt { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; font-size: 1rem; }
+    .swap-btn { background: none; border: none; color: var(--accent); font-size: 1.5rem; cursor: pointer; margin: 5px 0; }
   </style>
 </head>
 <body data-theme="light">
 
 <div class="app-container">
-  <div id="help-panel">
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-        <h2>Guide</h2>
-        <button onclick="toggleHelp()" style="padding:5px 15px; border-radius:10px; border:none; background:var(--error); color:white;">✕</button>
+  <div id="history-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="color:var(--text-main)">History</h2>
+      <button onclick="toggleHistory(false)" style="background:var(--error); color:white; border:none; padding:8px 15px; border-radius:10px;">Close</button>
     </div>
-    <div class="help-content">
-        <p><strong>Scientific:</strong> Use <i>sin, cos, √</i> as functions. Example: <code>Math.sin(90)</code>.</p><br>
-        <p><strong>Currency:</strong> Rates update live using <i>ExchangeRate-API</i>. NGN is set as default for Nigerian users.</p><br>
-        <p><strong>Dark Mode:</strong> Tap the moon/sun icon to toggle theme.</p>
-    </div>
+    <div id="history-list" style="flex:1; overflow-y:auto; margin:15px 0;"></div>
+    <button class="key clr" style="padding:15px; width:100%; font-size:1rem;" onclick="clearHistory()">Clear History</button>
   </div>
 
   <div class="nav">
-    <button id="tab-calc" class="active" onclick="setMode('calc')">Calc</button>
-    <button id="tab-conv" onclick="setMode('conv')">NGN $</button>
+    <button id="tab-calc" class="active" onclick="setMode('calc')">Calculator</button>
+    <button id="tab-conv" onclick="setMode('conv')">Currency</button>
     <button onclick="toggleSci()">🧪 Sci</button>
-    <button onclick="toggleHelp()">❓</button>
+    <button onclick="toggleHistory(true)">📜 Hist</button>
     <button onclick="toggleTheme()">🌙</button>
   </div>
 
   <div id="calc-mode" style="display: contents;">
     <div id="screen">
-      <div id="preview"></div>
+      <div id="live-preview"></div>
       <div id="main-input">0</div>
     </div>
     <div id="sci-grid">
@@ -109,18 +111,32 @@
     </div>
   </div>
 
-  <div id="conv-mode" style="display:none; padding-top:20px;">
-    <input type="number" id="amt" style="width:100%; padding:15px; margin-bottom:10px; border-radius:15px; border:1px solid var(--btn-bg); background:var(--bg-display); color:var(--text-main);" value="1" oninput="convert()">
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
-        <select id="from" onchange="convert()" style="flex:1; padding:12px; border-radius:10px;"><option value="USD">USD</option><option value="NGN">NGN</option></select>
-        <select id="to" onchange="convert()" style="flex:1; padding:12px; border-radius:10px;"><option value="NGN" selected>NGN</option><option value="USD">USD</option></select>
+  <div id="conv-mode">
+    <div class="conv-box">
+      <input type="number" id="amt" class="amt" value="1" oninput="convert()">
+      <select id="from" onchange="convert()">
+        <option value="NGN" selected>🇳🇬 NGN - Nigeria</option>
+        <option value="GHS">🇬🇭 GHS - Ghana</option>
+        <option value="ZAR">🇿🇦 ZAR - South Africa</option>
+        <option value="KES">🇰🇪 KES - Kenya</option>
+        <option value="USD">🇺🇸 USD - US Dollar</option>
+        <option value="EUR">🇪🇺 EUR - Euro</option>
+        <option value="GBP">🇬🇧 GBP - UK Pound</option>
+      </select>
+      <button class="swap-btn" onclick="swapCurrencies()">⇅ Swap</button>
+      <select id="to" onchange="convert()">
+        <option value="USD" selected>🇺🇸 USD - US Dollar</option>
+        <option value="NGN">🇳🇬 NGN - Nigeria</option>
+        <option value="EUR">🇪🇺 EUR - Euro</option>
+      </select>
+      <h2 id="res" style="color:var(--accent); font-size:2rem; margin-top:10px;">0.00</h2>
     </div>
-    <h2 id="res" style="text-align:center; color:var(--accent); font-size:2.5rem;">0.00</h2>
   </div>
 </div>
 
 <script>
   let currentInput = "0";
+  let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
 
   if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }
 
@@ -129,42 +145,76 @@
     document.getElementById('conv-mode').style.display = m === 'conv' ? 'block' : 'none';
     document.getElementById('tab-calc').className = m === 'calc' ? 'active' : '';
     document.getElementById('tab-conv').className = m === 'conv' ? 'active' : '';
+    if(m === 'conv') convert();
   }
 
   function press(v) { if(currentInput === "0" && !isNaN(v)) currentInput = v; else currentInput += v; update(); }
   function pressSci(f) { if(currentInput === "0") currentInput = f; else currentInput += f; update(); }
-  function cls() { currentInput = "0"; document.getElementById('preview').innerText = ""; update(); }
+  function cls() { currentInput = "0"; document.getElementById('live-preview').innerText = ""; update(); }
   function del() { currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; update(); }
-  function update() { document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, ''); }
+
+  function update() {
+    document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, '');
+    try {
+      let expr = currentInput;
+      let openBrackets = (expr.match(/\(/g) || []).length;
+      let closeBrackets = (expr.match(/\)/g) || []).length;
+      while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
+      
+      let preview = eval(expr);
+      if (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) {
+        document.getElementById('live-preview').innerText = preview.toLocaleString();
+      } else {
+        document.getElementById('live-preview').innerText = "";
+      }
+    } catch { document.getElementById('live-preview').innerText = ""; }
+  }
   
   function run() {
     try {
       let expr = currentInput;
-      // Auto-close brackets
       let openBrackets = (expr.match(/\(/g) || []).length;
       let closeBrackets = (expr.match(/\)/g) || []).length;
       while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
       
       let res = eval(expr);
-      document.getElementById('preview').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, '') + " =";
+      history.unshift(currentInput.replace(/\*/g, 'x').replace(/Math\./g, '') + " = " + res);
+      if(history.length > 20) history.pop();
+      localStorage.setItem('calcHistory', JSON.stringify(history));
+      
       currentInput = res.toString();
+      document.getElementById('live-preview').innerText = "";
       update();
     } catch { currentInput = "Error"; update(); }
   }
 
-  function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
-  function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
-  function toggleHelp() { document.getElementById('help-panel').classList.toggle('active'); }
+  function swapCurrencies() {
+    const from = document.getElementById('from');
+    const to = document.getElementById('to');
+    const temp = from.value;
+    from.value = to.value;
+    to.value = temp;
+    convert();
+  }
 
   async function convert() {
     const a = document.getElementById('amt').value;
     const f = document.getElementById('from').value;
     const t = document.getElementById('to').value;
-    const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
-    const d = await r.json();
-    document.getElementById('res').innerText = (a * d.rates[t]).toLocaleString(undefined, {minimumFractionDigits: 2});
+    if(!a) return;
+    try {
+      const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
+      const d = await r.json();
+      document.getElementById('res').innerText = (a * d.rates[t]).toLocaleString(undefined, {minimumFractionDigits: 2}) + " " + t;
+    } catch { document.getElementById('res').innerText = "Offline"; }
   }
+
+  function toggleHistory(show) { document.getElementById('history-panel').classList.toggle('active', show); if(show) renderHistory(); }
+  function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i})">${h}</div>`).join(''); }
+  function clearHistory() { history = []; localStorage.removeItem('calcHistory'); renderHistory(); }
+  function useHistory(i) { currentInput = history[i].split('=')[1].trim(); update(); toggleHistory(false); }
+  function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+  function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
 </script>
 </body>
-  </html>
-  
+</html>
