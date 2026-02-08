@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pro-calc-v2'; // Increment this (v3, v4...) every time you update your app
+const CACHE_NAME = 'pro-calc-v3'; // Increment this (v3, v4...) every time you update your app
 const ASSETS = [
   '/',
   '/index.html',
