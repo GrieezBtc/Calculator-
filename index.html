@@ -22,39 +22,40 @@
       --bg-body: #121212; --bg-calc: #202124; --bg-display: #2d2e31;
       --text-main: #e8eaed; --btn-bg: #3c4043;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-body); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
     
     .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; }
     @media (min-width: 420px) { .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); } }
 
     .nav { display: flex; gap: 5px; margin-bottom: 10px; }
-    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.75rem; }
+    .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: transform 0.1s; }
+    .nav button:active { transform: scale(0.95); }
     .nav button.active { background: var(--accent); color: white; }
 
     #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; }
-    #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; }
+    #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; font-weight: 500; }
     #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; word-break: break-all; line-height: 1.1; }
 
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; }
     #sci-grid { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
     #sci-grid.active { display: grid; }
 
-    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-    button.key:active { opacity: 0.6; }
+    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.1s; }
+    button.key:active { opacity: 0.6; transform: scale(0.92); }
     .op { color: var(--accent); font-weight: 700; }
     .eq { background: var(--success) !important; color: white; grid-column: span 2; border-radius: 35px; }
     .clr { background: var(--error) !important; color: white; }
     .sci-key { font-size: 0.9rem; background: #e8f0fe; color: #1a73e8; }
 
-    #history-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-calc); z-index: 100; transform: translateY(100%); transition: transform 0.3s; display: flex; flex-direction: column; padding: 20px; border-radius: inherit; }
+    #history-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-calc); z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding: 20px; border-radius: inherit; }
     #history-panel.active { transform: translateY(0); }
-    .history-item { padding: 15px; border-bottom: 1px solid var(--btn-bg); text-align: right; color: var(--text-main); cursor: pointer; }
+    .history-item { padding: 18px; border-bottom: 1px solid var(--btn-bg); text-align: right; color: var(--text-main); cursor: pointer; font-size: 1.1rem; }
 
     #conv-mode { display: none; flex-direction: column; padding: 10px; }
     .conv-box { background: var(--bg-display); padding: 20px; border-radius: 20px; text-align: center; }
     select, input.amt { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; font-size: 1rem; }
-    .swap-btn { background: none; border: none; color: var(--accent); font-size: 1.5rem; cursor: pointer; margin: 5px 0; }
+    .swap-btn { background: var(--btn-bg); border: none; color: var(--accent); padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; margin: 5px 0; }
   </style>
 </head>
 <body data-theme="light">
@@ -63,18 +64,18 @@
   <div id="history-panel">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <h2 style="color:var(--text-main)">History</h2>
-      <button onclick="toggleHistory(false)" style="background:var(--error); color:white; border:none; padding:8px 15px; border-radius:10px;">Close</button>
+      <button onclick="toggleHistory(false); haptic();" style="background:var(--error); color:white; border:none; padding:8px 15px; border-radius:10px;">Close</button>
     </div>
     <div id="history-list" style="flex:1; overflow-y:auto; margin:15px 0;"></div>
-    <button class="key clr" style="padding:15px; width:100%; font-size:1rem;" onclick="clearHistory()">Clear History</button>
+    <button class="key clr" style="padding:15px; width:100%; font-size:1rem;" onclick="clearHistory(); haptic();">Clear History</button>
   </div>
 
   <div class="nav">
-    <button id="tab-calc" class="active" onclick="setMode('calc')">Calculator</button>
-    <button id="tab-conv" onclick="setMode('conv')">Currency</button>
-    <button onclick="toggleSci()">🧪 Sci</button>
-    <button onclick="toggleHistory(true)">📜 Hist</button>
-    <button onclick="toggleTheme()">🌙</button>
+    <button id="tab-calc" class="active" onclick="setMode('calc'); haptic();">Calculator</button>
+    <button id="tab-conv" onclick="setMode('conv'); haptic();">Currency</button>
+    <button onclick="toggleSci(); haptic();">🧪 Sci</button>
+    <button onclick="toggleHistory(true); haptic();">📜 Hist</button>
+    <button onclick="toggleTheme(); haptic();">🌙</button>
   </div>
 
   <div id="calc-mode" style="display: contents;">
@@ -83,31 +84,31 @@
       <div id="main-input">0</div>
     </div>
     <div id="sci-grid">
-      <button class="key sci-key" onclick="pressSci('Math.sin(')">sin</button>
-      <button class="key sci-key" onclick="pressSci('Math.cos(')">cos</button>
-      <button class="key sci-key" onclick="pressSci('Math.sqrt(')">√</button>
-      <button class="key sci-key" onclick="press('**')">xʸ</button>
+      <button class="key sci-key" onclick="pressSci('Math.sin('); haptic();">sin</button>
+      <button class="key sci-key" onclick="pressSci('Math.cos('); haptic();">cos</button>
+      <button class="key sci-key" onclick="pressSci('Math.sqrt('); haptic();">√</button>
+      <button class="key sci-key" onclick="press('**'); haptic();">xʸ</button>
     </div>
     <div class="grid">
-      <button class="key clr" onclick="cls()">C</button>
-      <button class="key" onclick="del()">⌫</button>
-      <button class="key op" onclick="press('%')">%</button>
-      <button class="key op" onclick="press('/')">÷</button>
-      <button class="key" onclick="press('7')">7</button>
-      <button class="key" onclick="press('8')">8</button>
-      <button class="key" onclick="press('9')">9</button>
-      <button class="key op" onclick="press('*')">x</button>
-      <button class="key" onclick="press('4')">4</button>
-      <button class="key" onclick="press('5')">5</button>
-      <button class="key" onclick="press('6')">6</button>
-      <button class="key op" onclick="press('-')">-</button>
-      <button class="key" onclick="press('1')">1</button>
-      <button class="key" onclick="press('2')">2</button>
-      <button class="key" onclick="press('3')">3</button>
-      <button class="key op" onclick="press('+')">+</button>
-      <button class="key" onclick="press('0')">0</button>
-      <button class="key" onclick="press('.')">.</button>
-      <button class="key eq" onclick="run()">=</button>
+      <button class="key clr" onclick="cls(); haptic();">C</button>
+      <button class="key" onclick="del(); haptic();">⌫</button>
+      <button class="key op" onclick="press('%'); haptic();">%</button>
+      <button class="key op" onclick="press('/'); haptic();">÷</button>
+      <button class="key" onclick="press('7'); haptic();">7</button>
+      <button class="key" onclick="press('8'); haptic();">8</button>
+      <button class="key" onclick="press('9'); haptic();">9</button>
+      <button class="key op" onclick="press('*'); haptic();">x</button>
+      <button class="key" onclick="press('4'); haptic();">4</button>
+      <button class="key" onclick="press('5'); haptic();">5</button>
+      <button class="key" onclick="press('6'); haptic();">6</button>
+      <button class="key op" onclick="press('-'); haptic();">-</button>
+      <button class="key" onclick="press('1'); haptic();">1</button>
+      <button class="key" onclick="press('2'); haptic();">2</button>
+      <button class="key" onclick="press('3'); haptic();">3</button>
+      <button class="key op" onclick="press('+'); haptic();">+</button>
+      <button class="key" onclick="press('0'); haptic();">0</button>
+      <button class="key" onclick="press('.'); haptic();">.</button>
+      <button class="key eq" onclick="run(); haptic();">=</button>
     </div>
   </div>
 
@@ -123,13 +124,13 @@
         <option value="EUR">🇪🇺 EUR - Euro</option>
         <option value="GBP">🇬🇧 GBP - UK Pound</option>
       </select>
-      <button class="swap-btn" onclick="swapCurrencies()">⇅ Swap</button>
+      <button class="swap-btn" onclick="swapCurrencies(); haptic();">⇅ Swap Rates</button>
       <select id="to" onchange="convert()">
         <option value="USD" selected>🇺🇸 USD - US Dollar</option>
         <option value="NGN">🇳🇬 NGN - Nigeria</option>
         <option value="EUR">🇪🇺 EUR - Euro</option>
       </select>
-      <h2 id="res" style="color:var(--accent); font-size:2rem; margin-top:10px;">0.00</h2>
+      <h2 id="res" style="color:var(--accent); font-size:2.2rem; margin-top:10px;">0.00</h2>
     </div>
   </div>
 </div>
@@ -139,6 +140,13 @@
   let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
 
   if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }
+
+  // Haptic Feedback Function
+  function haptic() {
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(15); // Short 15ms vibrate
+    }
+  }
 
   function setMode(m) {
     document.getElementById('calc-mode').style.display = m === 'calc' ? 'contents' : 'none';
@@ -163,7 +171,7 @@
       
       let preview = eval(expr);
       if (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) {
-        document.getElementById('live-preview').innerText = preview.toLocaleString();
+        document.getElementById('live-preview').innerText = preview.toLocaleString(undefined, {maximumFractionDigits: 6});
       } else {
         document.getElementById('live-preview').innerText = "";
       }
@@ -210,7 +218,7 @@
   }
 
   function toggleHistory(show) { document.getElementById('history-panel').classList.toggle('active', show); if(show) renderHistory(); }
-  function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i})">${h}</div>`).join(''); }
+  function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i}); haptic();">${h}</div>`).join(''); }
   function clearHistory() { history = []; localStorage.removeItem('calcHistory'); renderHistory(); }
   function useHistory(i) { currentInput = history[i].split('=')[1].trim(); update(); toggleHistory(false); }
   function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
