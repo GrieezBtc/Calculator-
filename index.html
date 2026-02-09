@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5K6R4795LV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-5K6R4795LV');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5K6R4795LV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5K6R4795LV');
+  </script>
+  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-  <title>Pro Calc & Currency</title>
+  <title>Pro Calc & Vault</title>
   
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#fbaf00">
-  <link rel="icon" type="image/png" href="/icon.png">
-  <link rel="apple-touch-icon" href="/icon.png">
-  <link rel="manifest" href="/manifest.json">
-<script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-  
+  <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
   <style>
     :root {
       --bg-body: #f0f2f5; --bg-calc: #ffffff; --bg-display: #f8f9fa;
@@ -35,309 +28,150 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-body); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; transition: background 0.3s; }
     
-    .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; transition: background 0.3s; }
+    .app-container { width: 100%; max-width: 420px; height: 100%; background: var(--bg-calc); display: flex; flex-direction: column; padding: 15px; position: relative; transition: background 0.3s; overflow-y: auto; }
     @media (min-width: 420px) { .app-container { height: 90dvh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); } }
 
     .nav { display: flex; gap: 5px; margin-bottom: 10px; }
     .nav button { flex: 1; padding: 12px 5px; border: none; border-radius: 12px; background: var(--btn-bg); color: var(--text-main); font-weight: 600; cursor: pointer; font-size: 0.7rem; transition: transform 0.1s; }
-    .nav button:active { transform: scale(0.95); }
     .nav button.active { background: var(--accent); color: white; }
 
-    #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; transition: background 0.3s; }
-    #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; font-weight: 500; }
-    #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; word-break: break-all; line-height: 1.1; }
+    #screen { background: var(--bg-display); border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; min-height: 140px; }
+    #live-preview { font-size: 1.1rem; color: #888; min-height: 1.4rem; margin-bottom: 5px; }
+    #main-input { font-size: 2.5rem; color: var(--text-main); text-align: right; word-break: break-all; }
 
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; }
-    #sci-grid { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
-    #sci-grid.active { display: grid; }
-
-    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.1s; }
-    button.key:active { opacity: 0.6; transform: scale(0.92); }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    button.key { border: none; border-radius: 18px; background: var(--btn-bg); color: var(--text-main); font-size: 1.3rem; font-weight: 500; cursor: pointer; display: flex; justify-content: center; align-items: center; min-height: 60px; }
     .op { color: var(--accent); font-weight: 700; }
     .eq { background: var(--success) !important; color: white; grid-column: span 2; border-radius: 35px; }
     .clr { background: var(--error) !important; color: white; }
-    .sci-key { font-size: 0.9rem; background: #e8f0fe; color: #1a73e8; }
 
-    #history-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-calc); z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding: 20px; border-radius: inherit; }
-    #history-panel.active { transform: translateY(0); }
-    .history-item { padding: 18px; border-bottom: 1px solid var(--btn-bg); text-align: right; color: var(--text-main); cursor: pointer; font-size: 1.1rem; }
-
-    #conv-mode { display: none; flex-direction: column; padding: 10px; }
-    .conv-box { background: var(--bg-display); padding: 20px; border-radius: 20px; text-align: center; }
-    select, input.amt { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; font-size: 0.95rem; }
-    .swap-btn { background: var(--btn-bg); border: none; color: var(--accent); padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; margin: 5px 0; }
+    #vault-mode, #conv-mode { display: none; flex-direction: column; padding: 10px; }
+    .conv-box { background: var(--bg-display); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; }
+    input.amt { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: var(--bg-calc); color: var(--text-main); margin-bottom: 10px; }
+    
+    #vault-gallery img, #vault-gallery video { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-  <div id="history-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="color:var(--text-main)">History</h2>
-      <button onclick="toggleHistory(false); haptic();" style="background:var(--error); color:white; border:none; padding:8px 15px; border-radius:10px;">Close</button>
-    </div>
-    <div id="history-list" style="flex:1; overflow-y:auto; margin:15px 0;"></div>
-    <button class="key clr" style="padding:15px; width:100%; font-size:1rem;" onclick="clearHistory(); haptic();">Clear History</button>
-  </div>
-
   <div class="nav">
-    <button id="tab-calc" class="active" onclick="setMode('calc'); haptic();">Calc</button>
-    <button id="tab-conv" onclick="setMode('conv'); haptic();">Currency</button>
-    <button onclick="toggleSci(); haptic();">🧪 Sci</button>
-    <button onclick="toggleHistory(true); haptic();">📜 Hist</button>
-    <button id="theme-icon" onclick="toggleTheme(); haptic();">🌙</button>
+    <button id="tab-calc" class="active" onclick="setMode('calc')">Calc</button>
+    <button id="tab-conv" onclick="setMode('conv')">Currency</button>
+    <button id="theme-icon" onclick="toggleTheme()">🌙</button>
   </div>
 
-  <div id="calc-mode" style="display: contents;">
+  <div id="calc-mode">
     <div id="screen">
       <div id="live-preview"></div>
       <div id="main-input">0</div>
     </div>
-    <div id="sci-grid">
-      <button class="key sci-key" onclick="pressSci('Math.sin('); haptic();">sin</button>
-      <button class="key sci-key" onclick="pressSci('Math.cos('); haptic();">cos</button>
-      <button class="key sci-key" onclick="pressSci('Math.sqrt('); haptic();">√</button>
-      <button class="key sci-key" onclick="press('**'); haptic();">xʸ</button>
-    </div>
     <div class="grid">
-      <button class="key clr" onclick="cls(); haptic();">C</button>
-      <button class="key" onclick="del(); haptic();">⌫</button>
-      <button class="key op" onclick="press('%'); haptic();">%</button>
-      <button class="key op" onclick="press('/'); haptic();">÷</button>
-      <button class="key" onclick="press('7'); haptic();">7</button>
-      <button class="key" onclick="press('8'); haptic();">8</button>
-      <button class="key" onclick="press('9'); haptic();">9</button>
-      <button class="key op" onclick="press('*'); haptic();">x</button>
-      <button class="key" onclick="press('4'); haptic();">4</button>
-      <button class="key" onclick="press('5'); haptic();">5</button>
-      <button class="key" onclick="press('6'); haptic();">6</button>
-      <button class="key op" onclick="press('-'); haptic();">-</button>
-      <button class="key" onclick="press('1'); haptic();">1</button>
-      <button class="key" onclick="press('2'); haptic();">2</button>
-      <button class="key" onclick="press('3'); haptic();">3</button>
-      <button class="key op" onclick="press('+'); haptic();">+</button>
-      <button class="key" onclick="press('0'); haptic();">0</button>
-      <button class="key" onclick="press('.'); haptic();">.</button>
-      <button class="key eq" onclick="run(); haptic();">=</button>
+      <button class="key clr" onclick="cls()">C</button>
+      <button class="key" onclick="del()">⌫</button>
+      <button class="key op" onclick="press('%')">%</button>
+      <button class="key op" onclick="press('/')">÷</button>
+      <button class="key" onclick="press('7')">7</button>
+      <button class="key" onclick="press('8')">8</button>
+      <button class="key" onclick="press('9')">9</button>
+      <button class="key op" onclick="press('*')">x</button>
+      <button class="key" onclick="press('4')">4</button>
+      <button class="key" onclick="press('5')">5</button>
+      <button class="key" onclick="press('6')">6</button>
+      <button class="key op" onclick="press('-')">-</button>
+      <button class="key" onclick="press('1')">1</button>
+      <button class="key" onclick="press('2')">2</button>
+      <button class="key" onclick="press('3')">3</button>
+      <button class="key op" onclick="press('+')">+</button>
+      <button class="key" onclick="press('0')">0</button>
+      <button class="key" onclick="press('.')">.</button>
+      <button class="key eq" onclick="run()">=</button>
     </div>
   </div>
 
   <div id="conv-mode">
     <div class="conv-box">
       <input type="number" id="amt" class="amt" value="1" oninput="convert()">
-      <select id="from" onchange="convert()">
-        <optgroup label="Africa">
-          <option value="NGN" selected>🇳🇬 Nigeria - NGN</option>
-          <option value="GHS">🇬🇭 Ghana - GHS</option>
-          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
-          <option value="KES">🇰🇪 Kenya - KES</option>
-          <option value="EGP">🇪🇬 Egypt - EGP</option>
-        </optgroup>
-        <optgroup label="Europe/Global">
-          <option value="USD">🇺🇸 USA - USD</option>
-          <option value="EUR">🇪🇺 Europe - EUR</option>
-          <option value="GBP">🇬🇧 UK - GBP</option>
-          <option value="CAD">🇨🇦 Canada - CAD</option>
-        </optgroup>
-        <optgroup label="Asia/Oceania">
-          <option value="AED">🇦🇪 UAE - AED</option>
-          <option value="CNY">🇨🇳 China - CNY</option>
-          <option value="INR">🇮🇳 India - INR</option>
-          <option value="AUD">🇦🇺 Australia - AUD</option>
-          <option value="JPY">🇯🇵 Japan - JPY</option>
-        </optgroup>
-      </select>
-      <button class="swap-btn" onclick="swapCurrencies(); haptic();">⇅ Swap Rates</button>
-      <select id="to" onchange="convert()">
-        <optgroup label="Africa">
-          <option value="NGN">🇳🇬 Nigeria - NGN</option>
-          <option value="GHS">🇬🇭 Ghana - GHS</option>
-          <option value="ZAR">🇿🇦 South Africa - ZAR</option>
-          <option value="KES">🇰🇪 Kenya - KES</option>
-        </optgroup>
-        <optgroup label="Europe/Global">
-          <option value="USD" selected>🇺🇸 USA - USD</option>
-          <option value="EUR">🇪🇺 Europe - EUR</option>
-          <option value="GBP">🇬🇧 UK - GBP</option>
-        </optgroup>
-        <optgroup label="Asia/Oceania">
-          <option value="AED">🇦🇪 UAE - AED</option>
-          <option value="CNY">🇨🇳 China - CNY</option>
-          <option value="INR">🇮🇳 India - INR</option>
-        </optgroup>
-      </select>
-      <h2 id="res" style="color:var(--accent); font-size:1.8rem; margin-top:10px;">0.00</h2>
+      <h2 id="res" style="color:var(--accent); font-size:1.8rem;">0.00</h2>
+      <p style="font-size: 0.8rem; color: #888;">Live Rates Applied</p>
     </div>
   </div>
-    <div id="vault-mode" style="display: none; flex-direction: column; padding: 20px; height: 100%; overflow-y: auto;">
-    <h2 style="color:var(--accent); text-align:center; margin-bottom:15px;">🔒 Private Vault</h2>
-    
-    <div class="conv-box" style="margin-bottom: 20px;">
-      <p style="color:var(--text-main); font-size:0.8rem; margin-bottom:10px;">Select photos or videos to store locally.</p>
-      <input type="file" id="vault-input" class="amt" accept="image/*,video/*" style="border: 2px dashed var(--accent);">
-      <button class="swap-btn" style="width:100%;" onclick="saveToVault()">Upload to Secure Storage</button>
-    </div>
 
-    <div id="vault-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-      </div>
-
-    <button class="key clr" style="margin-top:20px; padding:15px; border-radius:15px;" onclick="location.reload()">Lock & Exit</button>
+  <div id="vault-mode">
+    <div class="conv-box">
+      <h2 style="color:var(--success)">🔒 Private Vault</h2>
+      <input type="file" id="vault-input" class="amt" accept="image/*,video/*">
+      <button class="key eq" style="width:100%; font-size:1rem; padding:10px;" onclick="saveToVault()">Secure Upload</button>
     </div>
+    <div id="vault-gallery"></div>
+    <button class="key clr" style="width:100%; margin-top:20px;" onclick="location.reload()">Lock Vault</button>
   </div>
+</div>
 
 <script>
   let currentInput = "0";
-  let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+  const db = new Dexie("VaultDB");
+  db.version(1).stores({ files: "++id, type" });
 
-  // --- Theme Logic ---
-  function applyTheme(theme) {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('user-theme', theme);
-    document.getElementById('theme-icon').innerText = theme === 'dark' ? '☀️' : '🌙';
-  }
-  const systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  systemQuery.addEventListener('change', (e) => {
-    if (!localStorage.getItem('user-theme')) applyTheme(e.matches ? 'dark' : 'light');
-  });
-  function toggleTheme() {
-    const current = document.body.getAttribute('data-theme');
-    applyTheme(current === 'dark' ? 'light' : 'dark');
-  }
-  const savedTheme = localStorage.getItem('user-theme');
-  if (savedTheme) applyTheme(savedTheme);
-  else applyTheme(systemQuery.matches ? 'dark' : 'light');
-
-  // --- Haptics & General ---
-  function haptic() { if (navigator.vibrate) navigator.vibrate(15); }
   function setMode(m) {
-    document.getElementById('calc-mode').style.display = m === 'calc' ? 'contents' : 'none';
+    document.getElementById('calc-mode').style.display = m === 'calc' ? 'block' : 'none';
     document.getElementById('conv-mode').style.display = m === 'conv' ? 'flex' : 'none';
+    document.getElementById('vault-mode').style.display = 'none';
     document.getElementById('tab-calc').className = m === 'calc' ? 'active' : '';
     document.getElementById('tab-conv').className = m === 'conv' ? 'active' : '';
-    if(m === 'conv') convert();
   }
 
-  // --- Calculator Engine ---
-  function press(v) { if(currentInput === "0" && !isNaN(v)) currentInput = v; else currentInput += v; update(); }
-  function pressSci(f) { if(currentInput === "0") currentInput = f; else currentInput += f; update(); }
-  function cls() { currentInput = "0"; document.getElementById('live-preview').innerText = ""; update(); }
+  function press(v) { 
+    if(currentInput === "0" && !isNaN(v)) currentInput = v; 
+    else currentInput += v; 
+    update(); 
+  }
+
+  function cls() { currentInput = "0"; update(); }
   function del() { currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0"; update(); }
+
   function update() {
-    document.getElementById('main-input').innerText = currentInput.replace(/\*/g, 'x').replace(/Math\./g, '');
-    try {
-      let expr = currentInput;
-      let openBrackets = (expr.match(/\(/g) || []).length;
-      let closeBrackets = (expr.match(/\)/g) || []).length;
-      while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
-      let preview = eval(expr);
-      document.getElementById('live-preview').innerText = (preview !== undefined && !isNaN(preview) && preview.toString() !== currentInput) ? preview.toLocaleString(undefined, {maximumFractionDigits: 6}) : "";
-    } catch { document.getElementById('live-preview').innerText = ""; }
+    document.getElementById('main-input').innerText = currentInput;
   }
+
   function run() {
-    try {
-      let expr = currentInput;
-      let openBrackets = (expr.match(/\(/g) || []).length;
-      let closeBrackets = (expr.match(/\)/g) || []).length;
-      while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
-      let res = eval(expr);
-      history.unshift(currentInput.replace(/\*/g, 'x').replace(/Math\./g, '') + " = " + res);
-      if(history.length > 20) history.pop();
-      localStorage.setItem('calcHistory', JSON.stringify(history));
-      currentInput = res.toString();
-      document.getElementById('live-preview').innerText = "";
-      update();
-    } catch { currentInput = "Error"; update(); }
-  }
-
-  // --- Currency Engine ---
-  async function convert() {
-    const a = document.getElementById('amt').value, f = document.getElementById('from').value, t = document.getElementById('to').value;
-    if(!a) return;
-    try {
-      const r = await fetch(`https://open.er-api.com/v6/latest/${f}`);
-      const d = await r.json();
-      document.getElementById('res').innerText = (a * d.rates[t]).toLocaleString(undefined, {minimumFractionDigits: 2}) + " " + t;
-    } catch { document.getElementById('res').innerText = "Offline"; }
-  }
-  function swapCurrencies() {
-    const from = document.getElementById('from'), to = document.getElementById('to'), tmp = from.value;
-    from.value = to.value; to.value = tmp; convert();
-  }
-
-  // --- UI Helpers ---
-  function toggleHistory(s) { document.getElementById('history-panel').classList.toggle('active', s); if(s) renderHistory(); }
-  function renderHistory() { document.getElementById('history-list').innerHTML = history.map((h, i) => `<div class="history-item" onclick="useHistory(${i}); haptic();">${h}</div>`).join(''); }
-  function clearHistory() { history = []; localStorage.removeItem('calcHistory'); renderHistory(); }
-  function useHistory(i) { currentInput = history[i].split('=')[1].trim(); update(); toggleHistory(false); }
-  function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
-
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-    function run() {
-    // SECRET PIN CHECK: Change "1234" to whatever you want
+    // SECRET TRIGGER: Type 1234 and hit =
     if (currentInput === "1234") {
       document.getElementById('calc-mode').style.display = 'none';
-      document.getElementById('conv-mode').style.display = 'none';
       document.getElementById('vault-mode').style.display = 'flex';
       renderVault();
       return;
     }
-
     try {
-      // ... keep the rest of your existing run() code below ...
-      let expr = currentInput;
-      let openBrackets = (expr.match(/\(/g) || []).length;
-      let closeBrackets = (expr.match(/\)/g) || []).length;
-      while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
-      let res = eval(expr);
-      // ... etc ...
-      
-  // --- VAULT ENGINE (Gigabyte Support) ---
-  const db = new Dexie("VaultDB");
-  db.version(1).stores({ files: "++id, type, name" });
+      currentInput = eval(currentInput).toString();
+      update();
+    } catch { currentInput = "Error"; update(); }
+  }
 
+  // GIGABYTE VAULT LOGIC
   async function saveToVault() {
     const file = document.getElementById('vault-input').files[0];
-    if (!file) return alert("Select a file first!");
-
-    await db.files.add({
-      type: file.type,
-      name: file.name,
-      data: file // This stores the actual large file blob
-    });
-    
-    document.getElementById('vault-input').value = "";
+    if (!file) return;
+    await db.files.add({ type: file.type, data: file });
     renderVault();
-    haptic();
   }
 
   async function renderVault() {
     const gallery = document.getElementById('vault-gallery');
     gallery.innerHTML = "";
     const items = await db.files.toArray();
-
     items.forEach(item => {
       const url = URL.createObjectURL(item.data);
-      const div = document.createElement('div');
-      div.className = "conv-box";
-      div.style.padding = "5px";
-
-      if (item.type.startsWith('image/')) {
-        div.innerHTML = `<img src="${url}" style="width:100%; border-radius:10px;">`;
-      } else {
-        div.innerHTML = `<video src="${url}" controls style="width:100%; border-radius:10px;"></video>`;
-      }
-      
-      const delBtn = document.createElement('button');
-      delBtn.innerText = "× Delete";
-      delBtn.style = "background:var(--error); color:white; border:none; border-radius:5px; margin-top:5px; width:100%; cursor:pointer;";
-      delBtn.onclick = async () => { if(confirm("Delete file?")) { await db.files.delete(item.id); renderVault(); } };
-      
-      div.appendChild(delBtn);
-      gallery.appendChild(div);
+      const el = item.type.startsWith('image/') ? document.createElement('img') : document.createElement('video');
+      el.src = url; if(!item.type.startsWith('image/')) el.controls = true;
+      gallery.appendChild(el);
     });
   }
-  
+
+  function toggleTheme() {
+    const current = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
 </script>
 </body>
-          </html>
-          
+</html>
