@@ -20,7 +20,8 @@
   <link rel="icon" type="image/png" href="/icon.png">
   <link rel="apple-touch-icon" href="/icon.png">
   <link rel="manifest" href="/manifest.json">
-
+<script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+  
   <style>
     :root {
       --bg-body: #f0f2f5; --bg-calc: #ffffff; --bg-display: #f8f9fa;
@@ -168,7 +169,21 @@
       <h2 id="res" style="color:var(--accent); font-size:1.8rem; margin-top:10px;">0.00</h2>
     </div>
   </div>
-</div>
+    <div id="vault-mode" style="display: none; flex-direction: column; padding: 20px; height: 100%; overflow-y: auto;">
+    <h2 style="color:var(--accent); text-align:center; margin-bottom:15px;">🔒 Private Vault</h2>
+    
+    <div class="conv-box" style="margin-bottom: 20px;">
+      <p style="color:var(--text-main); font-size:0.8rem; margin-bottom:10px;">Select photos or videos to store locally.</p>
+      <input type="file" id="vault-input" class="amt" accept="image/*,video/*" style="border: 2px dashed var(--accent);">
+      <button class="swap-btn" style="width:100%;" onclick="saveToVault()">Upload to Secure Storage</button>
+    </div>
+
+    <div id="vault-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+      </div>
+
+    <button class="key clr" style="margin-top:20px; padding:15px; border-radius:15px;" onclick="location.reload()">Lock & Exit</button>
+    </div>
+  </div>
 
 <script>
   let currentInput = "0";
@@ -257,6 +272,71 @@
   function toggleSci() { document.getElementById('sci-grid').classList.toggle('active'); }
 
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+    function run() {
+    // SECRET PIN CHECK: Change "1234" to whatever you want
+    if (currentInput === "1234") {
+      document.getElementById('calc-mode').style.display = 'none';
+      document.getElementById('conv-mode').style.display = 'none';
+      document.getElementById('vault-mode').style.display = 'flex';
+      renderVault();
+      return;
+    }
+
+    try {
+      // ... keep the rest of your existing run() code below ...
+      let expr = currentInput;
+      let openBrackets = (expr.match(/\(/g) || []).length;
+      let closeBrackets = (expr.match(/\)/g) || []).length;
+      while(openBrackets > closeBrackets) { expr += ')'; openBrackets--; }
+      let res = eval(expr);
+      // ... etc ...
+      
+  // --- VAULT ENGINE (Gigabyte Support) ---
+  const db = new Dexie("VaultDB");
+  db.version(1).stores({ files: "++id, type, name" });
+
+  async function saveToVault() {
+    const file = document.getElementById('vault-input').files[0];
+    if (!file) return alert("Select a file first!");
+
+    await db.files.add({
+      type: file.type,
+      name: file.name,
+      data: file // This stores the actual large file blob
+    });
+    
+    document.getElementById('vault-input').value = "";
+    renderVault();
+    haptic();
+  }
+
+  async function renderVault() {
+    const gallery = document.getElementById('vault-gallery');
+    gallery.innerHTML = "";
+    const items = await db.files.toArray();
+
+    items.forEach(item => {
+      const url = URL.createObjectURL(item.data);
+      const div = document.createElement('div');
+      div.className = "conv-box";
+      div.style.padding = "5px";
+
+      if (item.type.startsWith('image/')) {
+        div.innerHTML = `<img src="${url}" style="width:100%; border-radius:10px;">`;
+      } else {
+        div.innerHTML = `<video src="${url}" controls style="width:100%; border-radius:10px;"></video>`;
+      }
+      
+      const delBtn = document.createElement('button');
+      delBtn.innerText = "× Delete";
+      delBtn.style = "background:var(--error); color:white; border:none; border-radius:5px; margin-top:5px; width:100%; cursor:pointer;";
+      delBtn.onclick = async () => { if(confirm("Delete file?")) { await db.files.delete(item.id); renderVault(); } };
+      
+      div.appendChild(delBtn);
+      gallery.appendChild(div);
+    });
+  }
+  
 </script>
 </body>
           </html>
